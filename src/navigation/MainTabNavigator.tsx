@@ -1,59 +1,102 @@
 import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MainTabParamList } from './types';
-import { COLORS } from '../theme/colors';
-import { responsive } from '../theme/responsive';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { theme } from '../theme/colors';
+import { MainTabParamList, RootStackParamList } from './types';
 
-// Import your screens here
-import HomeScreen from '../screens/Home';
-import ProfileScreen from '../screens/Profile';
-import SettingsScreen from '../screens/Settings';
+// Auth Screens
+import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 
+// Main Screens
+import DashboardScreen from '../screens/DashboardScreen';
+import CreateBatchScreen from '../screens/CreateBatchScreen';
+import QRGenerateScreen from '../screens/QRGenerateScreen';
+import BatchListScreen from '../screens/BatchListScreen';
+import BatchDetailScreen from '../screens/BatchDetailScreen';
+import QRScanScreen from '../screens/QRScanScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import AdminDashboardScreen from '../screens/AdminDashboardScreen';
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-export const MainTabNavigator = () => {
+const MainTabs = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.gray500,
+        headerShown: false,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textLight,
         tabBarStyle: {
-          height: responsive.hp('8%'),
-          paddingBottom: responsive.hp('1%'),
-          paddingTop: responsive.hp('1%'),
+          backgroundColor: theme.colors.white,
+          borderTopColor: theme.colors.border,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+          marginBottom: 10,
         },
-        headerStyle: {
-          height: responsive.hp('8%'),
+        tabBarLabelStyle: {
+          fontFamily: theme.typography.fontFamily.medium,
+          fontSize: 12,
         },
-        headerTitleStyle: {
-          fontSize: responsive.wp('4.5%'),
-        },
-      }}
-    >
+      }}>
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={DashboardScreen}
         options={{
-          title: 'Home',
-          // Add your tab icon here
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Scan"
+        component={QRScanScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="qrcode-scan" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          title: 'Profile',
-          // Add your tab icon here
-        }}
-      />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          title: 'Settings',
-          // Add your tab icon here
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="account" size={size} color={color} />
+          ),
         }}
       />
     </Tab.Navigator>
   );
-}; 
+};
+
+const MainNavigator = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        animation: 'slide_from_right',
+      }}>
+      {/* Auth Stack */}
+      <Stack.Group>
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+      </Stack.Group>
+
+      {/* Main Stack */}
+      <Stack.Group>
+        <Stack.Screen name="MainTabs" component={MainTabs} />
+        <Stack.Screen name="CreateBatch" component={CreateBatchScreen} />
+        <Stack.Screen name="QRGenerate" component={QRGenerateScreen} />
+        <Stack.Screen name="BatchList" component={BatchListScreen} />
+        <Stack.Screen name="BatchDetail" component={BatchDetailScreen} />
+        <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+      </Stack.Group>
+    </Stack.Navigator>
+  );
+};
+
+export default MainNavigator; 

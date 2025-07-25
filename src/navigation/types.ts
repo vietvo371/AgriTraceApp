@@ -1,16 +1,24 @@
-export type RootStackParamList = {
-  Auth: undefined;
-  Main: undefined;
-};
+import { NavigatorScreenParams } from '@react-navigation/native';
 
-export type AuthStackParamList = {
+export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
-  ForgotPassword: undefined;
+  MainTabs: NavigatorScreenParams<MainTabParamList>;
+  CreateBatch: undefined;
+  QRGenerate: { batchId: string };
+  BatchList: undefined;
+  BatchDetail: { batchId: string };
+  AdminDashboard: undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
+  Scan: undefined;
   Profile: undefined;
-  Settings: undefined;
-}; 
+};
+
+declare global {
+  namespace ReactNavigation {
+    interface RootParamList extends RootStackParamList {}
+  }
+} 
