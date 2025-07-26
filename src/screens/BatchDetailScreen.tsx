@@ -46,7 +46,7 @@ const mockBatchData = {
   images: {
     farm: 'https://example.com/farm.jpg',
     product: 'https://example.com/product.jpg',
-    farmer: 'https://example.com/farmer.jpg',
+    farmer: 'https://imgv3.fotor.com/images/blog-richtext-image/10-profile-picture-ideas-to-make-you-stand-out.jpg',
   },
   farmer: {
     name: 'John Doe',
@@ -63,7 +63,7 @@ const mockBatchData = {
       id: '1',
       reviewer: {
         name: 'Alice Smith',
-        avatar: 'https://example.com/avatar1.jpg',
+        // avatar: 'https://example.com/avatar1.jpg',
       },
       rating: 5,
       comment: 'Excellent quality mangoes! Very sweet and fresh.',

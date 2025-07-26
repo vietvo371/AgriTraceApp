@@ -126,7 +126,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
       <View style={[styles.imageContainer, error ? styles.errorBorder : {}]}>
         {imageUri ? (
           <View style={styles.imageWrapper}>
-            <Image source={{ uri: imageUri }} style={styles.image} />
+            <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
             <TouchableOpacity
               style={styles.changeButton}
               onPress={handleChoosePhoto}>
