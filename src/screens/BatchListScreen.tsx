@@ -42,6 +42,7 @@ const mockBatches: Batch[] = [
     harvest_date: '2024-03-15',
     cultivation_method: 'Organic',
     status: 'active',
+    image: 'https://m.media-amazon.com/images/I/8111GVVXLwL.jpg',
   },
   {
     id: '2',
@@ -51,6 +52,7 @@ const mockBatches: Batch[] = [
     harvest_date: '2024-03-14',
     cultivation_method: 'Traditional',
     status: 'active',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSExFuBL_BshlmedZ2KKvVWofJ2UoOpQMOb7g&s',
   },
   {
     id: '3',
@@ -60,6 +62,7 @@ const mockBatches: Batch[] = [
     harvest_date: '2024-02-28',
     cultivation_method: 'Organic',
     status: 'expired',
+    image: 'https://intechvietnam.com/uploads/noidung/images/baiviet/quy-trinh-san-xuat-gao.jpg',
   },
   {
     id: '4',
@@ -69,6 +72,7 @@ const mockBatches: Batch[] = [
     harvest_date: '2024-03-10',
     cultivation_method: 'Traditional',
     status: 'active',
+    image: 'https://thefreshandnatural.com/wp-content/uploads/2020/05/APPLE-GREEN.jpg',
   },
 ];
 

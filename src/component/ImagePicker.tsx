@@ -7,9 +7,10 @@ import {
   Image,
   Platform,
   PermissionsAndroid,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import { theme } from '../theme/colors';
 
 interface ImagePickerProps {
@@ -49,51 +50,69 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
     return true;
   };
 
-  const handleTakePhoto = async () => {
-    const hasPermission = await requestCameraPermission();
-    if (!hasPermission) {
+  const handleImagePickerResponse = (response: ImagePickerResponse) => {
+    if (response.didCancel) {
       return;
     }
 
-    launchCamera(
-      {
-        mediaType: 'photo',
-        quality: 0.8,
-      },
-      response => {
-        if (response.didCancel) {
-          return;
-        }
-        if (response.errorCode) {
-          console.error('ImagePicker Error: ', response.errorMessage);
-          return;
-        }
-        if (response.assets && response.assets[0]?.uri) {
-          onImageSelected(response.assets[0].uri);
-        }
-      },
-    );
+    if (response.errorCode) {
+      let errorMessage = 'Something went wrong while picking the image';
+      switch (response.errorCode) {
+        case 'camera_unavailable':
+          errorMessage = 'Camera not available on device';
+          break;
+        case 'permission':
+          errorMessage = 'Permission not granted';
+          break;
+        case 'others':
+          errorMessage = response.errorMessage || 'Unknown error occurred';
+          break;
+      }
+      Alert.alert('Error', errorMessage);
+      return;
+    }
+
+    if (response.assets && response.assets[0]?.uri) {
+      onImageSelected(response.assets[0].uri);
+    } else {
+      Alert.alert('Error', 'No image was selected');
+    }
   };
 
-  const handleChoosePhoto = () => {
-    launchImageLibrary(
-      {
+  const handleTakePhoto = async () => {
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) {
+      Alert.alert('Permission Denied', 'Camera permission is required to take photos');
+      return;
+    }
+
+    try {
+      const result = await launchCamera({
         mediaType: 'photo',
         quality: 0.8,
-      },
-      response => {
-        if (response.didCancel) {
-          return;
-        }
-        if (response.errorCode) {
-          console.error('ImagePicker Error: ', response.errorMessage);
-          return;
-        }
-        if (response.assets && response.assets[0]?.uri) {
-          onImageSelected(response.assets[0].uri);
-        }
-      },
-    );
+        saveToPhotos: false,
+        includeBase64: false,
+      });
+      handleImagePickerResponse(result);
+    } catch (error) {
+      console.error('Camera launch error:', error);
+      Alert.alert('Error', 'Failed to launch camera');
+    }
+  };
+
+  const handleChoosePhoto = async () => {
+    try {
+      const result = await launchImageLibrary({
+        mediaType: 'photo',
+        quality: 0.8,
+        selectionLimit: 1,
+        includeBase64: false,
+      });
+      handleImagePickerResponse(result);
+    } catch (error) {
+      console.error('Image library error:', error);
+      Alert.alert('Error', 'Failed to open photo gallery');
+    }
   };
 
   return (

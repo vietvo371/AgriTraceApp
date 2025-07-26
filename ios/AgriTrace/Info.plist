@@ -31,6 +31,12 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>AgriTrace needs access to location to mark your farm location.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>AgriTrace needs access to location to mark your farm location.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>AgriTrace needs access to location to mark your farm location.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

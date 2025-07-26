@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { ColorGeneral } from '../const/ColorGeneral';
+import { theme } from '../theme/colors';
 
 interface FileUploaderProps {
     onFileSelected: (fileInfo: DocumentPickerResponse) => void;
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
         padding: wp('4%'),
     },
     button: {
-        backgroundColor: ColorGeneral.primary,
+        backgroundColor: theme.colors.primary,
         paddingVertical: hp('1.5%'),
         paddingHorizontal: wp('6%'),
         borderRadius: 8,

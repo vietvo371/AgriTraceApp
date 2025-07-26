@@ -11,6 +11,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { theme } from '../theme/colors';
+import { useAuth } from '../contexts/AuthContext';
 import InputCustom from '../component/InputCustom';
 import ButtonCustom from '../component/ButtonCustom';
 import LoadingOverlay from '../component/LoadingOverlay';
@@ -20,6 +21,7 @@ interface LoginScreenProps {
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,7 +75,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           keyboardShouldPersistTaps="handled">
           <View style={styles.content}>
             <Image
-              source={require('../assets/images/logo_wise.png')}
+              source={require('../assets/images/logo.jpg')}
               style={styles.logo}
               resizeMode="contain"
             />

@@ -52,6 +52,7 @@ const mockRecentBatches = [
     harvest_date: '2024-03-15',
     cultivation_method: 'Organic',
     status: 'active',
+    image: 'https://m.media-amazon.com/images/I/8111GVVXLwL.jpg',
   },
   {
     id: '2',
@@ -61,6 +62,7 @@ const mockRecentBatches = [
     harvest_date: '2024-03-14',
     cultivation_method: 'Traditional',
     status: 'active',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSExFuBL_BshlmedZ2KKvVWofJ2UoOpQMOb7g&s',
   },
 ];
 

@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     fontSize: responsive.wp('4%'),
-    color: COLORS.textGray,
+    color: COLORS.textLight,
   },
 });
 

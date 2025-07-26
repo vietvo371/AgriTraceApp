@@ -6,6 +6,7 @@ import { theme } from '../theme/colors';
 import { MainTabParamList, RootStackParamList } from './types';
 
 // Auth Screens
+import LoadingScreen from '../screens/LoadingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 
@@ -76,10 +77,14 @@ const MainTabs = () => {
 const MainNavigator = () => {
   return (
     <Stack.Navigator
+      initialRouteName="Loading"
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
       }}>
+      {/* Initial Loading Screen */}
+      <Stack.Screen name="Loading" component={LoadingScreen} />
+
       {/* Auth Stack */}
       <Stack.Group>
         <Stack.Screen name="Login" component={LoginScreen} />

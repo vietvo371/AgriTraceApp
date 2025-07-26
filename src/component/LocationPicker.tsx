@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,10 @@ import {
   PermissionsAndroid,
   Modal,
   Dimensions,
+  Alert,
+  SafeAreaView,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Region } from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
@@ -27,6 +29,11 @@ interface LocationPickerProps {
   required?: boolean;
 }
 
+const DEFAULT_LOCATION = {
+  latitude: 16.0746492,
+  longitude: 108.2203005, //Da Nang City coordinates
+};
+
 const LocationPicker: React.FC<LocationPickerProps> = ({
   value,
   onChange,
@@ -34,53 +41,87 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   error,
   required = false,
 }) => {
+  const mapRef = useRef<MapView>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(value || null);
+  const [mapReady, setMapReady] = useState(false);
 
   const requestLocationPermission = async () => {
-    if (Platform.OS === 'ios') {
-      const auth = await Geolocation.requestAuthorization('whenInUse');
-      return auth === 'granted';
-    }
-
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: 'Location Permission',
-          message: 'AgriTrace needs access to your location.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
+    try {
+      if (Platform.OS === 'ios') {
+        const auth = await Geolocation.requestAuthorization('whenInUse');
+        if (auth === 'granted') {
+          return true;
+        }
+      } else {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Permission',
+            message: 'AgriTrace needs access to your location to mark your farm location.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          return true;
+        }
+      }
+      Alert.alert(
+        'Permission Denied',
+        'Location permission is required to use this feature. Please enable it in your device settings.',
+        [{ text: 'OK' }]
       );
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
+      return false;
+    } catch (err) {
+      console.warn(err);
+      return false;
     }
-    return false;
+  };
+
+  const animateToLocation = (location: Location) => {
+    mapRef.current?.animateToRegion({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    }, 1000);
   };
 
   const getCurrentLocation = async () => {
-    const hasPermission = await requestLocationPermission();
-    if (!hasPermission) {
-      return;
-    }
+    try {
+      const hasPermission = await requestLocationPermission();
+      if (!hasPermission) {
+        return;
+      }
 
-    Geolocation.getCurrentPosition(
-      position => {
-        const location = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-        setCurrentLocation(location);
-        if (!value) {
+      Geolocation.getCurrentPosition(
+        position => {
+          const location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+          setCurrentLocation(location);
+          setSelectedLocation(location);
           onChange(location);
-        }
-      },
-      error => {
-        console.error(error);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
-    );
+          animateToLocation(location);
+          console.log('Current location:', location);
+        },
+        error => {
+          console.error(error);
+          Alert.alert(
+            'Error',
+            'Could not get your location. Please try again or select manually.',
+            [{ text: 'OK' }]
+          );
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+      );
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -91,6 +132,22 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
   const formatLocation = (location: Location) => {
     return `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
+  };
+
+  const handleMapPress = (e: any) => {
+    const location = e.nativeEvent.coordinate;
+    setSelectedLocation(location);
+    onChange(location);
+    console.log('Selected location:', location);
+  };
+
+  const handleConfirmLocation = () => {
+    if (selectedLocation) {
+      onChange(selectedLocation);
+      setModalVisible(false);
+    } else {
+      Alert.alert('Error', 'Please select a location first');
+    }
   };
 
   return (
@@ -104,59 +161,67 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       <TouchableOpacity
         style={[styles.button, error ? styles.buttonError : {}]}
         onPress={() => setModalVisible(true)}>
-        <Text
-          style={[
-            styles.buttonText,
-            !value && styles.placeholderText,
-          ]}>
-          {value ? formatLocation(value) : 'Select location'}
-        </Text>
-        <Icon name="map-marker" size={24} color={theme.colors.primary} />
+        <View style={styles.buttonContent}>
+          <Icon name="map-marker" size={24} color={theme.colors.primary} style={styles.buttonIcon} />
+          <Text
+            style={[
+              styles.buttonText,
+              !selectedLocation && styles.placeholderText,
+            ]}>
+            {selectedLocation ? formatLocation(selectedLocation) : 'Select location'}
+          </Text>
+        </View>
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
 
       <Modal
         visible={modalVisible}
         animationType="slide"
-        transparent={false}
+        transparent={true}
         onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Location</Text>
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={styles.closeButton}>
-              <Icon name="close" size={24} color={theme.colors.text} />
-            </TouchableOpacity>
-          </View>
-          <MapView
-            provider={PROVIDER_GOOGLE}
-            style={styles.map}
-            initialRegion={{
-              latitude: value?.latitude || (currentLocation?.latitude || 0),
-              longitude: value?.longitude || (currentLocation?.longitude || 0),
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-            onPress={e => {
-              const location = e.nativeEvent.coordinate;
-              onChange(location);
-            }}>
-            {value && <Marker coordinate={value} />}
-          </MapView>
-          <View style={styles.modalFooter}>
-            <TouchableOpacity
-              style={styles.currentLocationButton}
-              onPress={getCurrentLocation}>
-              <Icon name="crosshairs-gps" size={24} color={theme.colors.primary} />
-              <Text style={styles.currentLocationText}>Current Location</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.confirmButton}
-              onPress={() => setModalVisible(false)}>
-              <Text style={styles.confirmButtonText}>Confirm Location</Text>
-            </TouchableOpacity>
-          </View>
+          <SafeAreaView style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                style={styles.closeButton}>
+                <Icon name="arrow-left" size={24} color={theme.colors.text} />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Select Location</Text>
+              <View style={styles.headerRight} />
+            </View>
+
+            <View style={styles.mapContainer}>
+              <MapView
+                ref={mapRef}
+                style={styles.map}
+                initialRegion={{
+                  latitude: selectedLocation?.latitude || DEFAULT_LOCATION.latitude,
+                  longitude: selectedLocation?.longitude || DEFAULT_LOCATION.longitude,
+                  latitudeDelta: 0.0922,
+                  longitudeDelta: 0.0421,
+                }}
+                onPress={handleMapPress}>
+                {selectedLocation && (
+                  <Marker coordinate={selectedLocation} />
+                )}
+              </MapView>
+            </View>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.currentLocationButton}
+                onPress={getCurrentLocation}>
+                <Icon name="crosshairs-gps" size={24} color={theme.colors.white} />
+                <Text style={styles.currentLocationText}>Use Current Location</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={handleConfirmLocation}>
+                <Text style={styles.confirmButtonText}>Confirm Location</Text>
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
         </View>
       </Modal>
     </View>
@@ -177,15 +242,20 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
   },
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     height: 48,
     paddingHorizontal: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.borderRadius.md,
     backgroundColor: theme.colors.white,
+    justifyContent: 'center',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  buttonIcon: {
+    marginRight: theme.spacing.sm,
   },
   buttonError: {
     borderColor: theme.colors.error,
@@ -207,7 +277,14 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
+    backgroundColor: theme.colors.overlay,
+  },
+  modalContent: {
+    flex: 1,
     backgroundColor: theme.colors.white,
+    marginTop: 80,
+    borderTopLeftRadius: theme.borderRadius.lg,
+    borderTopRightRadius: theme.borderRadius.lg,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -225,29 +302,36 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: theme.spacing.xs,
   },
+  headerRight: {
+    width: 40,
+  },
+  mapContainer: {
+    flex: 1,
+    overflow: 'hidden',
+  },
   map: {
     flex: 1,
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
+    width: '100%',
+    height: 200,
   },
   modalFooter: {
     padding: theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
     backgroundColor: theme.colors.white,
   },
   currentLocationButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
     paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
     marginBottom: theme.spacing.sm,
   },
   currentLocationText: {
     marginLeft: theme.spacing.sm,
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.fontSize.md,
-    color: theme.colors.primary,
+    color: theme.colors.white,
   },
   confirmButton: {
     backgroundColor: theme.colors.primary,

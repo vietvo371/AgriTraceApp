@@ -20,7 +20,7 @@
     "react": "19.1.0",
     "react-native": "0.80.2",
     "react-native-camera": "^4.2.1",
-    "react-native-date-picker": "^5.0.13",
+    "react-native-date-picker": "^4.3.7",
     "react-native-geolocation-service": "^5.3.1",
     "react-native-image-picker": "^8.2.1",
     "react-native-maps": "^1.24.10",
@@ -32,6 +32,7 @@
     "react-native-responsive-screen": "^1.4.2",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.13.1",
+    "react-native-svg": "^15.12.0",
     "react-native-vector-icons": "^10.3.0"
   },
   "devDependencies": {
@@ -57,5 +58,6 @@
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

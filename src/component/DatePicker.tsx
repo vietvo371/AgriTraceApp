@@ -59,7 +59,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         modal
         open={open}
         date={value}
-        onConfirm={date => {
+        onConfirm={(date) => {
           setOpen(false);
           onChange(date);
         }}
@@ -67,8 +67,6 @@ const DatePicker: React.FC<DatePickerProps> = ({
         mode="date"
         minimumDate={minimumDate}
         maximumDate={maximumDate}
-        androidVariant="nativeAndroid"
-        theme="light"
       />
     </View>
   );
