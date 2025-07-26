@@ -6,15 +6,14 @@ import {
   ScrollView,
   SafeAreaView,
   Image,
-  Dimensions,
   Platform,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
 import Header from '../component/Header';
-import Card from '../component/Card';
 import Badge from '../component/Badge';
 import ReviewCard from '../component/ReviewCard';
 import ButtonCustom from '../component/ButtonCustom';
@@ -60,12 +59,34 @@ const mockBatchData = {
     unique_customers: 35,
     average_rating: 4.5,
   },
+  certification: {
+    type: 'VietGAP',
+    number: 'VG-123456',
+    validUntil: '2025-03-15',
+  },
+  quality_tests: [
+    {
+      date: '2024-03-10',
+      type: 'Pesticide Residue',
+      result: 'Passed',
+      lab: 'ABC Testing Lab',
+    }
+  ],
+  traceability: {
+    batch_code: 'BT2024031501',
+    packaging_date: '2024-03-15',
+    best_before: '2024-03-30',
+  },
+  sustainability: {
+    water_usage: '120L/kg',
+    carbon_footprint: '0.8kg CO2/kg',
+    pesticide_usage: 'Minimal - Organic methods',
+  },
   reviews: [
     {
       id: '1',
       reviewer: {
         name: 'Alice Smith',
-        // avatar: 'https://example.com/avatar1.jpg',
       },
       rating: 5,
       comment: 'Excellent quality mangoes! Very sweet and fresh.',
@@ -99,6 +120,30 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
     console.log('Edit batch:', batchId);
   };
 
+  const renderInfoItem = (icon: string, label: string, value: string, color: string) => (
+    <View style={styles.infoItem}>
+      <View style={[styles.infoIcon, { backgroundColor: color + '15' }]}>
+        <Icon name={icon} size={20} color={color} />
+      </View>
+      <View>
+        <Text style={styles.infoLabel}>{label}</Text>
+        <Text style={styles.infoValue}>{value}</Text>
+      </View>
+    </View>
+  );
+
+  const renderCertificationItem = (icon: string, title: string, value: string, color: string) => (
+    <View style={styles.certificationItem}>
+      <View style={[styles.certificationIcon, { backgroundColor: color + '15' }]}>
+        <Icon name={icon} size={24} color={color} />
+      </View>
+      <View style={styles.certificationContent}>
+        <Text style={styles.certificationTitle}>{title}</Text>
+        <Text style={styles.certificationValue}>{value}</Text>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
@@ -110,8 +155,8 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
         showsVerticalScrollIndicator={false}
       >
         {/* Header Section */}
-        <View style={styles.headerSection}>
-          <View style={styles.header}>
+        <View style={styles.headerCard}>
+          <View style={styles.headerContent}>
             <View style={styles.titleContainer}>
               <Text style={styles.productName}>{mockBatchData.product_name}</Text>
               <View style={styles.categoryContainer}>
@@ -124,58 +169,104 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
               variant={mockBatchData.status === 'active' ? 'success' : 'error'}
             />
           </View>
+          <View style={styles.batchInfoContainer}>
+            <Text style={styles.batchCode}>Batch Code: {mockBatchData.traceability.batch_code}</Text>
+          </View>
+        </View>
+
+        {/* Quick Stats */}
+        <View style={styles.statsGrid}>
+          <View style={[styles.statsCard, styles.elevation]}>
+            <Icon name="qrcode-scan" size={24} color={theme.colors.primary} />
+            <Text style={styles.statsValue}>{mockBatchData.stats.total_scans}</Text>
+            <Text style={styles.statsLabel}>Total Scans</Text>
+          </View>
+          <View style={[styles.statsCard, styles.elevation]}>
+            <Icon name="account-group" size={24} color={theme.colors.secondary} />
+            <Text style={styles.statsValue}>{mockBatchData.stats.unique_customers}</Text>
+            <Text style={styles.statsLabel}>Customers</Text>
+          </View>
+          <View style={[styles.statsCard, styles.elevation]}>
+            <Icon name="star" size={24} color={theme.colors.warning} />
+            <Text style={styles.statsValue}>{mockBatchData.stats.average_rating}</Text>
+            <Text style={styles.statsLabel}>Rating</Text>
+          </View>
+        </View>
+
+        {/* Traceability Information */}
+        <View style={[styles.section, styles.elevation]}>
+          <View style={styles.sectionHeader}>
+            <Icon name="timeline-text" size={24} color={theme.colors.primary} />
+            <Text style={styles.sectionTitle}>Traceability Information</Text>
+          </View>
+          <View style={styles.timelineContainer}>
+            {renderCertificationItem(
+              'calendar-check',
+              'Packaging Date',
+              mockBatchData.traceability.packaging_date,
+              theme.colors.primary
+            )}
+            {renderCertificationItem(
+              'calendar-clock',
+              'Best Before',
+              mockBatchData.traceability.best_before,
+              theme.colors.warning
+            )}
+            {renderCertificationItem(
+              'certificate',
+              'VietGAP Certification',
+              `${mockBatchData.certification.number} (Valid until ${mockBatchData.certification.validUntil})`,
+              theme.colors.success
+            )}
+          </View>
         </View>
 
         {/* Product Information */}
-        <View style={styles.section}>
+        <View style={[styles.section, styles.elevation]}>
           <View style={styles.sectionHeader}>
-            <Icon name="information-outline" size={20} color={theme.colors.primary} />
+            <Icon name="information" size={24} color={theme.colors.primary} />
             <Text style={styles.sectionTitle}>Product Information</Text>
           </View>
           <View style={styles.infoGrid}>
-            <View style={styles.infoItem}>
-              <View style={[styles.infoIcon, { backgroundColor: theme.colors.primary + '15' }]}>
-                <Icon name="weight-kilogram" size={20} color={theme.colors.primary} />
-              </View>
-              <View>
-                <Text style={styles.infoLabel}>Weight</Text>
-                <Text style={styles.infoValue}>{mockBatchData.weight} kg</Text>
-              </View>
-            </View>
-            <View style={styles.infoItem}>
-              <View style={[styles.infoIcon, { backgroundColor: theme.colors.secondary + '15' }]}>
-                <Icon name="leaf" size={20} color={theme.colors.secondary} />
-              </View>
-              <View>
-                <Text style={styles.infoLabel}>Method</Text>
-                <Text style={styles.infoValue}>{mockBatchData.cultivation_method}</Text>
-              </View>
-            </View>
-            <View style={styles.infoItem}>
-              <View style={[styles.infoIcon, { backgroundColor: theme.colors.accent + '15' }]}>
-                <Icon name="calendar-blank-outline" size={20} color={theme.colors.accent} />
-              </View>
-              <View>
-                <Text style={styles.infoLabel}>Planted</Text>
-                <Text style={styles.infoValue}>{mockBatchData.planting_date}</Text>
-              </View>
-            </View>
-            <View style={styles.infoItem}>
-              <View style={[styles.infoIcon, { backgroundColor: theme.colors.success + '15' }]}>
-                <Icon name="calendar-check-outline" size={20} color={theme.colors.success} />
-              </View>
-              <View>
-                <Text style={styles.infoLabel}>Harvested</Text>
-                <Text style={styles.infoValue}>{mockBatchData.harvest_date}</Text>
-              </View>
-            </View>
+            {renderInfoItem('weight-kilogram', 'Weight', `${mockBatchData.weight} kg`, theme.colors.primary)}
+            {renderInfoItem('leaf', 'Method', mockBatchData.cultivation_method, theme.colors.secondary)}
+            {renderInfoItem('calendar-blank', 'Planted', mockBatchData.planting_date, theme.colors.accent)}
+            {renderInfoItem('calendar-check', 'Harvested', mockBatchData.harvest_date, theme.colors.success)}
+          </View>
+        </View>
+
+        {/* Sustainability Metrics */}
+        <View style={[styles.section, styles.elevation]}>
+          <View style={styles.sectionHeader}>
+            <Icon name="leaf-circle" size={24} color={theme.colors.success} />
+            <Text style={styles.sectionTitle}>Sustainability Metrics</Text>
+          </View>
+          <View style={styles.sustainabilityGrid}>
+            {renderCertificationItem(
+              'water',
+              'Water Usage',
+              mockBatchData.sustainability.water_usage,
+              theme.colors.primary
+            )}
+            {renderCertificationItem(
+              'molecule-co2',
+              'Carbon Footprint',
+              mockBatchData.sustainability.carbon_footprint,
+              theme.colors.secondary
+            )}
+            {renderCertificationItem(
+              'flask',
+              'Pesticide Usage',
+              mockBatchData.sustainability.pesticide_usage,
+              theme.colors.success
+            )}
           </View>
         </View>
 
         {/* Farm Location */}
-        <View style={styles.section}>
+        <View style={[styles.section, styles.elevation]}>
           <View style={styles.sectionHeader}>
-            <Icon name="map-marker-outline" size={20} color={theme.colors.primary} />
+            <Icon name="map-marker" size={24} color={theme.colors.primary} />
             <Text style={styles.sectionTitle}>Farm Location</Text>
           </View>
           <View style={styles.mapContainer}>
@@ -202,9 +293,9 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
         </View>
 
         {/* Farmer Information */}
-        <View style={styles.section}>
+        <View style={[styles.section, styles.elevation]}>
           <View style={styles.sectionHeader}>
-            <Icon name="account-outline" size={20} color={theme.colors.primary} />
+            <Icon name="account" size={24} color={theme.colors.primary} />
             <Text style={styles.sectionTitle}>Farmer Information</Text>
           </View>
           <View style={styles.farmerCard}>
@@ -215,52 +306,21 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
             <View style={styles.farmerDetails}>
               <Text style={styles.farmerName}>{mockBatchData.farmer.name}</Text>
               <View style={styles.contactItem}>
-                <Icon name="phone-outline" size={16} color={theme.colors.primary} />
+                <Icon name="phone" size={16} color={theme.colors.primary} />
                 <Text style={styles.farmerContact}>{mockBatchData.farmer.phone}</Text>
               </View>
               <View style={styles.contactItem}>
-                <Icon name="email-outline" size={16} color={theme.colors.primary} />
+                <Icon name="email" size={16} color={theme.colors.primary} />
                 <Text style={styles.farmerContact}>{mockBatchData.farmer.email}</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Statistics */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Icon name="chart-bar" size={20} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>Statistics</Text>
-          </View>
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <View style={[styles.statIcon, { backgroundColor: theme.colors.primary + '15' }]}>
-                <Icon name="qrcode-scan" size={24} color={theme.colors.primary} />
-              </View>
-              <Text style={styles.statValue}>{mockBatchData.stats.total_scans}</Text>
-              <Text style={styles.statLabel}>Total Scans</Text>
-            </View>
-            <View style={styles.statCard}>
-              <View style={[styles.statIcon, { backgroundColor: theme.colors.secondary + '15' }]}>
-                <Icon name="account-group-outline" size={24} color={theme.colors.secondary} />
-              </View>
-              <Text style={styles.statValue}>{mockBatchData.stats.unique_customers}</Text>
-              <Text style={styles.statLabel}>Customers</Text>
-            </View>
-            <View style={styles.statCard}>
-              <View style={[styles.statIcon, { backgroundColor: theme.colors.warning + '15' }]}>
-                <Icon name="star-outline" size={24} color={theme.colors.warning} />
-              </View>
-              <Text style={styles.statValue}>{mockBatchData.stats.average_rating}</Text>
-              <Text style={styles.statLabel}>Avg Rating</Text>
-            </View>
-          </View>
-        </View>
-
         {/* Reviews */}
-        <View style={styles.section}>
+        <View style={[styles.section, styles.elevation]}>
           <View style={styles.sectionHeader}>
-            <Icon name="comment-text-outline" size={20} color={theme.colors.primary} />
+            <Icon name="comment-text" size={24} color={theme.colors.primary} />
             <Text style={styles.sectionTitle}>Customer Reviews</Text>
           </View>
           <View style={styles.reviewsContainer}>
@@ -282,14 +342,12 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
             title="Generate QR Code"
             onPress={handleGenerateQR}
             style={styles.actionButton}
-            icon="qrcode"
           />
           <ButtonCustom
             title="Edit Batch"
             onPress={handleEditBatch}
             variant="outline"
             style={styles.actionButton}
-            icon="pencil"
           />
         </View>
       </ScrollView>
@@ -304,37 +362,50 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
   scrollContent: {
-    padding: theme.spacing.lg,
+    padding: 16,
   },
-  headerSection: {
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
+  elevation: {
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.1,
         shadowRadius: 8,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
     }),
   },
-  header: {
+  headerCard: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
   titleContainer: {
     flex: 1,
-    marginRight: theme.spacing.md,
+    marginRight: 16,
   },
   productName: {
-    fontFamily: theme.typography.fontFamily.bold,
-    fontSize: theme.typography.fontSize.xl,
+    fontSize: 24,
+    fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: 8,
   },
@@ -343,38 +414,91 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   category: {
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.md,
+    fontSize: 16,
     color: theme.colors.textLight,
     marginLeft: 4,
   },
+  batchInfoContainer: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  batchCode: {
+    fontSize: 14,
+    color: theme.colors.textLight,
+    fontFamily: 'monospace',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    gap: 12,
+  },
+  statsCard: {
+    flex: 1,
+    backgroundColor: theme.colors.white,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+  },
+  statsValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginVertical: 8,
+  },
+  statsLabel: {
+    fontSize: 14,
+    color: theme.colors.textLight,
+  },
   section: {
     backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontFamily: theme.typography.fontFamily.bold,
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: 18,
+    fontWeight: 'bold',
     color: theme.colors.text,
-    marginLeft: theme.spacing.sm,
+    marginLeft: 12,
+  },
+  timelineContainer: {
+    gap: 16,
+  },
+  certificationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+    borderRadius: 12,
+    padding: 16,
+  },
+  certificationIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  certificationContent: {
+    flex: 1,
+  },
+  certificationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.text,
+    marginBottom: 4,
+  },
+  certificationValue: {
+    fontSize: 14,
+    color: theme.colors.textLight,
   },
   infoGrid: {
     flexDirection: 'row',
@@ -396,61 +520,62 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   infoLabel: {
-    fontFamily: theme.typography.fontFamily.regular,
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 14,
     color: theme.colors.textLight,
     marginBottom: 2,
   },
   infoValue: {
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.md,
+    fontSize: 16,
+    fontWeight: '500',
     color: theme.colors.text,
   },
+  sustainabilityGrid: {
+    gap: 12,
+  },
   mapContainer: {
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   addressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary + '10',
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    marginBottom: theme.spacing.md,
+    backgroundColor: theme.colors.background,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
   },
   address: {
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.md,
+    fontSize: 16,
     color: theme.colors.text,
-    marginLeft: theme.spacing.sm,
+    marginLeft: 12,
     flex: 1,
   },
   map: {
     width: '100%',
     height: 200,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: 12,
   },
   farmerCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
+    borderRadius: 16,
+    padding: 16,
   },
   farmerImage: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginRight: theme.spacing.md,
+    marginRight: 16,
   },
   farmerDetails: {
     flex: 1,
   },
   farmerName: {
-    fontFamily: theme.typography.fontFamily.bold,
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: 18,
+    fontWeight: 'bold',
     color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
+    marginBottom: 8,
   },
   contactItem: {
     flexDirection: 'row',
@@ -458,51 +583,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   farmerContact: {
-    fontFamily: theme.typography.fontFamily.regular,
-    fontSize: theme.typography.fontSize.md,
+    fontSize: 14,
     color: theme.colors.textLight,
-    marginLeft: theme.spacing.sm,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-  },
-  statIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: theme.spacing.sm,
-  },
-  statValue: {
-    fontFamily: theme.typography.fontFamily.bold,
-    fontSize: theme.typography.fontSize.xl,
-    color: theme.colors.text,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.textLight,
+    marginLeft: 8,
   },
   reviewsContainer: {
     gap: 12,
   },
   actions: {
     gap: 12,
+    marginTop: 8,
   },
   actionButton: {
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: 12,
   },
 });
 
+export default BatchDetailScreen; 
 export default BatchDetailScreen; 
