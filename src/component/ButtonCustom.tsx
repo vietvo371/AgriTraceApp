@@ -18,6 +18,7 @@ interface ButtonCustomProps {
   loading?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  iconName?: string;
 }
 
 const ButtonCustom: React.FC<ButtonCustomProps> = ({
@@ -29,6 +30,7 @@ const ButtonCustom: React.FC<ButtonCustomProps> = ({
   loading = false,
   style,
   textStyle,
+  iconName,
 }) => {
   const getButtonStyle = () => {
     const baseStyle = [styles.button];

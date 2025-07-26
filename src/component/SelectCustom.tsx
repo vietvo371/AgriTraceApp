@@ -7,6 +7,7 @@ import {
   Modal,
   FlatList,
   SafeAreaView,
+  ViewStyle,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
@@ -24,6 +25,7 @@ interface SelectCustomProps {
   error?: string;
   required?: boolean;
   placeholder?: string;
+  containerStyle?: ViewStyle;
 }
 
 const SelectCustom: React.FC<SelectCustomProps> = ({
@@ -34,6 +36,7 @@ const SelectCustom: React.FC<SelectCustomProps> = ({
   error,
   required = false,
   placeholder = 'Select an option',
+  containerStyle,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -65,7 +68,7 @@ const SelectCustom: React.FC<SelectCustomProps> = ({
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       {label && (
         <Text style={styles.label}>
           {label}

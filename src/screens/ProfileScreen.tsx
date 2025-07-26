@@ -7,11 +7,11 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
 import Header from '../component/Header';
-import Card from '../component/Card';
 import ImagePicker from '../component/ImagePicker';
 import InputCustom from '../component/InputCustom';
 import ButtonCustom from '../component/ButtonCustom';
@@ -136,118 +136,134 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="Profile"
+        title=""
         showBack={false}
         rightComponent={
           isEditing ? (
-            <TouchableOpacity onPress={handleCancel}>
+            <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity onPress={handleEdit}>
-              <Icon name="pencil" size={24} color={theme.colors.primary} />
+            <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
+              <Icon name="pencil-outline" size={24} color={theme.colors.primary} />
             </TouchableOpacity>
           )
         }
       />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.imageContainer}>
-          <ImagePicker
-            imageUri={formData.profile_image}
-            onImageSelected={uri =>
-              setFormData(prev => ({ ...prev, profile_image: uri }))
-            }
-            error={errors.profile_image}
-          />
-          {!isEditing && (
-            <View style={styles.roleContainer}>
-              <Icon name="shield-account" size={16} color={theme.colors.primary} />
-              <Text style={styles.roleText}>
-                {mockUserData.role.charAt(0).toUpperCase() +
-                  mockUserData.role.slice(1)}
-              </Text>
-            </View>
-          )}
-        </View>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.profileHeader}>
+          <View style={styles.imageContainer}>
+            <ImagePicker
+              imageUri={formData.profile_image}
+              onImageSelected={uri =>
+                setFormData(prev => ({ ...prev, profile_image: uri }))
+              }
+              error={errors.profile_image}
+            />
+            {!isEditing && (
+              <View style={styles.roleContainer}>
+                <Icon name="shield-account-outline" size={16} color={theme.colors.primary} />
+                <Text style={styles.roleText}>
+                  {mockUserData.role.charAt(0).toUpperCase() +
+                    mockUserData.role.slice(1)}
+                </Text>
+              </View>
+            )}
+          </View>
 
-        <Card variant="outlined" style={styles.statsCard}>
-          <View style={styles.statsGrid}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {mockUserData.stats.total_batches}
-              </Text>
-              <Text style={styles.statLabel}>Total Batches</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {mockUserData.stats.active_batches}
-              </Text>
-              <Text style={styles.statLabel}>Active Batches</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {mockUserData.stats.total_scans}
-              </Text>
-              <Text style={styles.statLabel}>Total Scans</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {mockUserData.stats.average_rating}
-              </Text>
-              <Text style={styles.statLabel}>Avg Rating</Text>
+          <View style={styles.statsSection}>
+            <View style={styles.statsGrid}>
+              <View style={styles.statCard}>
+                <View style={[styles.statIcon, { backgroundColor: theme.colors.primary + '15' }]}>
+                  <Icon name="package-variant-closed" size={24} color={theme.colors.primary} />
+                </View>
+                <Text style={styles.statValue}>{mockUserData.stats.total_batches}</Text>
+                <Text style={styles.statLabel}>Total Batches</Text>
+              </View>
+              <View style={styles.statCard}>
+                <View style={[styles.statIcon, { backgroundColor: theme.colors.success + '15' }]}>
+                  <Icon name="package-variant" size={24} color={theme.colors.success} />
+                </View>
+                <Text style={styles.statValue}>{mockUserData.stats.active_batches}</Text>
+                <Text style={styles.statLabel}>Active Batches</Text>
+              </View>
+              <View style={styles.statCard}>
+                <View style={[styles.statIcon, { backgroundColor: theme.colors.secondary + '15' }]}>
+                  <Icon name="qrcode-scan" size={24} color={theme.colors.secondary} />
+                </View>
+                <Text style={styles.statValue}>{mockUserData.stats.total_scans}</Text>
+                <Text style={styles.statLabel}>Total Scans</Text>
+              </View>
+              <View style={styles.statCard}>
+                <View style={[styles.statIcon, { backgroundColor: theme.colors.warning + '15' }]}>
+                  <Icon name="star-outline" size={24} color={theme.colors.warning} />
+                </View>
+                <Text style={styles.statValue}>{mockUserData.stats.average_rating}</Text>
+                <Text style={styles.statLabel}>Avg Rating</Text>
+              </View>
             </View>
           </View>
-        </Card>
+        </View>
 
-        <View style={styles.form}>
-          <InputCustom
-            label="Full Name"
-            value={formData.full_name}
-            onChangeText={value =>
-              setFormData(prev => ({ ...prev, full_name: value }))
-            }
-            error={errors.full_name}
-            editable={isEditing}
-            required
-          />
+        <View style={styles.formSection}>
+          <View style={styles.sectionHeader}>
+            <Icon name="account-details-outline" size={20} color={theme.colors.primary} />
+            <Text style={styles.sectionTitle}>Personal Information</Text>
+          </View>
 
-          <InputCustom
-            label="Email"
-            value={formData.email}
-            onChangeText={value =>
-              setFormData(prev => ({ ...prev, email: value }))
-            }
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-            editable={isEditing}
-            required
-          />
+          <View style={styles.form}>
+            <InputCustom
+              label="Full Name"
+              value={formData.full_name}
+              onChangeText={value =>
+                setFormData(prev => ({ ...prev, full_name: value }))
+              }
+              error={errors.full_name}
+              editable={isEditing}
+              required
+            />
 
-          <InputCustom
-            label="Phone Number"
-            value={formData.phone_number}
-            onChangeText={value =>
-              setFormData(prev => ({ ...prev, phone_number: value }))
-            }
-            keyboardType="phone-pad"
-            error={errors.phone_number}
-            editable={isEditing}
-            required
-          />
+            <InputCustom
+              label="Email"
+              value={formData.email}
+              onChangeText={value =>
+                setFormData(prev => ({ ...prev, email: value }))
+              }
+              keyboardType="email-address"
+              autoCapitalize="none"
+              error={errors.email}
+              editable={isEditing}
+              required
+            />
 
-          <InputCustom
-            label="Address"
-            value={formData.address}
-            onChangeText={value =>
-              setFormData(prev => ({ ...prev, address: value }))
-            }
-            multiline
-            numberOfLines={3}
-            error={errors.address}
-            editable={isEditing}
-            required
-          />
+            <InputCustom
+              label="Phone Number"
+              value={formData.phone_number}
+              onChangeText={value =>
+                setFormData(prev => ({ ...prev, phone_number: value }))
+              }
+              keyboardType="phone-pad"
+              error={errors.phone_number}
+              editable={isEditing}
+              required
+            />
+
+            <InputCustom
+              label="Address"
+              value={formData.address}
+              onChangeText={value =>
+                setFormData(prev => ({ ...prev, address: value }))
+              }
+              multiline
+              numberOfLines={3}
+              error={errors.address}
+              editable={isEditing}
+              required
+            />
+          </View>
 
           {isEditing && (
             <ButtonCustom
@@ -273,23 +289,40 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: '#F8FAFC',
   },
   scrollContent: {
     padding: theme.spacing.lg,
   },
+  profileHeader: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
   imageContainer: {
     alignItems: 'center',
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing.lg,
   },
   roleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.primary + '10',
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
-    marginTop: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.full,
+    marginTop: theme.spacing.md,
   },
   roleText: {
     fontFamily: theme.typography.fontFamily.medium,
@@ -297,44 +330,88 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     marginLeft: theme.spacing.xs,
   },
-  statsCard: {
-    marginBottom: theme.spacing.xl,
+  statsSection: {
+    marginTop: theme.spacing.md,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    margin: -theme.spacing.sm,
+    gap: 12,
   },
-  statItem: {
-    width: '50%',
-    padding: theme.spacing.sm,
+  statCard: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
     alignItems: 'center',
+  },
+  statIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
   },
   statValue: {
     fontFamily: theme.typography.fontFamily.bold,
     fontSize: theme.typography.fontSize.xl,
     color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
+    marginBottom: 4,
   },
   statLabel: {
-    fontFamily: theme.typography.fontFamily.regular,
+    fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.textLight,
   },
+  formSection: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  sectionTitle: {
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.fontSize.lg,
+    color: theme.colors.text,
+    marginLeft: theme.spacing.sm,
+  },
   form: {
-    marginBottom: theme.spacing.xl,
+    gap: 16,
+  },
+  editButton: {
+    padding: 8,
+  },
+  cancelButton: {
+    padding: 8,
+  },
+  cancelText: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.error,
   },
   saveButton: {
     marginTop: theme.spacing.xl,
     marginBottom: theme.spacing.md,
   },
   logoutButton: {
-    marginTop: theme.spacing.xl,
-  },
-  cancelText: {
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.md,
-    color: theme.colors.error,
+    marginTop: theme.spacing.md,
   },
 });
 

@@ -19,6 +19,7 @@ import BatchDetailScreen from '../screens/BatchDetailScreen';
 import QRScanScreen from '../screens/QRScanScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -99,6 +100,7 @@ const MainNavigator = () => {
         <Stack.Screen name="BatchList" component={BatchListScreen} />
         <Stack.Screen name="BatchDetail" component={BatchDetailScreen} />
         <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
       </Stack.Group>
     </Stack.Navigator>
   );

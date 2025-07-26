@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
@@ -60,8 +61,11 @@ const BatchCard: React.FC<BatchCardProps> = ({
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={styles.productName}>{batch.product_name}</Text>
-            <Text style={styles.category}>{batch.category}</Text>
+            <Text style={styles.productName} numberOfLines={1}>{batch.product_name}</Text>
+            <View style={styles.categoryContainer}>
+              <Icon name="tag-outline" size={14} color={theme.colors.textLight} />
+              <Text style={styles.category}>{batch.category}</Text>
+            </View>
           </View>
           <Badge
             text={getStatusText()}
@@ -71,43 +75,65 @@ const BatchCard: React.FC<BatchCardProps> = ({
         </View>
         <View style={styles.details}>
           <View style={styles.detailItem}>
-            <Icon name="weight" size={16} color={theme.colors.textLight} />
+            <Icon name="weight-kilogram" size={16} color={theme.colors.primary} />
             <Text style={styles.detailText}>{batch.weight} kg</Text>
           </View>
           <View style={styles.detailItem}>
-            <Icon name="calendar" size={16} color={theme.colors.textLight} />
+            <Icon name="calendar-outline" size={16} color={theme.colors.secondary} />
             <Text style={styles.detailText}>{batch.harvest_date}</Text>
           </View>
           <View style={styles.detailItem}>
-            <Icon name="sprout" size={16} color={theme.colors.textLight} />
+            <Icon name="leaf" size={16} color={theme.colors.accent} />
             <Text style={styles.detailText}>{batch.cultivation_method}</Text>
           </View>
         </View>
       </View>
-      <Icon
-        name="chevron-right"
-        size={24}
-        color={theme.colors.textLight}
-        style={styles.chevron}
-      />
+      <View style={styles.actionContainer}>
+        <Icon
+          name="chevron-right"
+          size={24}
+          color={theme.colors.primary}
+        />
+      </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.borderRadius.lg,
     flexDirection: 'row',
     padding: theme.spacing.md,
-    marginVertical: theme.spacing.sm,
-    ...theme.shadows.sm,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   imageContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: theme.borderRadius.sm,
+    width: 70,
+    height: 70,
+    borderRadius: theme.borderRadius.md,
     overflow: 'hidden',
+    backgroundColor: theme.colors.white,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   image: {
     width: '100%',
@@ -135,34 +161,43 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
   },
   productName: {
-    fontFamily: theme.typography.fontFamily.medium,
+    fontFamily: theme.typography.fontFamily.bold,
     fontSize: theme.typography.fontSize.md,
     color: theme.colors.text,
+    marginBottom: 4,
+  },
+  categoryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   category: {
     fontFamily: theme.typography.fontFamily.regular,
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.textLight,
-    marginTop: theme.spacing.xs / 2,
+    marginLeft: 4,
   },
   details: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 8,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: theme.spacing.md,
-    marginBottom: theme.spacing.xs,
+    backgroundColor: theme.colors.white,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: theme.borderRadius.sm,
   },
   detailText: {
-    fontFamily: theme.typography.fontFamily.regular,
+    fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.textLight,
-    marginLeft: theme.spacing.xs,
+    color: theme.colors.text,
+    marginLeft: 6,
   },
-  chevron: {
-    alignSelf: 'center',
+  actionContainer: {
+    justifyContent: 'center',
     marginLeft: theme.spacing.sm,
   },
 });

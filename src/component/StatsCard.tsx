@@ -5,12 +5,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
 
 interface StatsCardProps {
   title: string;
+  subtitle?: string;
   value: string | number;
   icon: string;
   iconColor?: string;
@@ -24,6 +26,7 @@ interface StatsCardProps {
 
 const StatsCard: React.FC<StatsCardProps> = ({
   title,
+  subtitle,
   value,
   icon,
   iconColor = theme.colors.primary,
@@ -39,8 +42,8 @@ const StatsCard: React.FC<StatsCardProps> = ({
     const trendValue = trend.isPositive ? `+${trend.value}%` : `${trend.value}%`;
 
     return (
-      <View style={styles.trendContainer}>
-        <Icon name={trendIcon} size={16} color={trendColor} />
+      <View style={[styles.trendContainer, { backgroundColor: trendColor + '10' }]}>
+        <Icon name={trendIcon} size={14} color={trendColor} />
         <Text style={[styles.trendText, { color: trendColor }]}>
           {trendValue}
         </Text>
@@ -55,14 +58,17 @@ const StatsCard: React.FC<StatsCardProps> = ({
       style={[styles.container, style]}
       onPress={onPress}
       activeOpacity={0.8}>
-      <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
-          <Icon name={icon} size={24} color={iconColor} />
-        </View>
+      <View style={[styles.iconContainer, { backgroundColor: iconColor + '15' }]}>
+        <Icon name={icon} size={22} color={iconColor} />
+      </View>
+      <View style={styles.contentContainer}>
+        <Text style={styles.value}>{value}</Text>
+        <Text style={styles.title} numberOfLines={1}>{title}</Text>
+        {subtitle && (
+          <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>
+        )}
         {renderTrend()}
       </View>
-      <Text style={styles.value}>{value}</Text>
-      <Text style={styles.title}>{title}</Text>
     </CardComponent>
   );
 };
@@ -70,42 +76,61 @@ const StatsCard: React.FC<StatsCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    ...theme.shadows.sm,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.sm,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.borderRadius.sm,
+    width: 44,
+    height: 44,
+    borderRadius: theme.borderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  contentContainer: {
+    gap: 4,
   },
   value: {
     fontFamily: theme.typography.fontFamily.bold,
     fontSize: theme.typography.fontSize.xl,
     color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
+    marginBottom: 2,
   },
   title: {
-    fontFamily: theme.typography.fontFamily.regular,
+    fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text,
+  },
+  subtitle: {
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.textLight,
+    marginBottom: theme.spacing.sm,
   },
   trendContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+    marginTop: 4,
   },
   trendText: {
     fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.sm,
-    marginLeft: theme.spacing.xs,
+    fontSize: theme.typography.fontSize.xs,
   },
 });
 

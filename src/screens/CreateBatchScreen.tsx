@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import {
   View,
+  Text,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   SafeAreaView,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
 import Header from '../component/Header';
 import InputCustom from '../component/InputCustom';
@@ -22,15 +24,15 @@ interface CreateBatchScreenProps {
 }
 
 const categoryOptions = [
-  { label: 'Fruits', value: 'fruits' },
-  { label: 'Vegetables', value: 'vegetables' },
-  { label: 'Grains', value: 'grains' },
-  { label: 'Nuts', value: 'nuts' },
+  { label: 'Fruits', value: 'fruits', icon: 'fruit-cherries' },
+  { label: 'Vegetables', value: 'vegetables', icon: 'carrot' },
+  { label: 'Grains', value: 'grains', icon: 'grain' },
+  { label: 'Nuts', value: 'nuts', icon: 'peanut' },
 ];
 
 const cultivationMethodOptions = [
-  { label: 'Organic', value: 'organic' },
-  { label: 'Traditional', value: 'traditional' },
+  { label: 'Organic', value: 'organic', icon: 'leaf' },
+  { label: 'Traditional', value: 'traditional', icon: 'sprout' },
 ];
 
 const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => {
@@ -132,8 +134,16 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
         style={styles.keyboardAvoidingView}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled">
-          <View style={styles.content}>
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          
+          {/* Product Information Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Icon name="cube-outline" size={20} color={theme.colors.primary} />
+              <Text style={styles.sectionTitle}>Product Information</Text>
+            </View>
+
             <SelectCustom
               label="Category"
               value={formData.category}
@@ -142,6 +152,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               placeholder="Select product category"
               error={errors.category}
               required
+              leftIcon="shape-outline"
             />
 
             <InputCustom
@@ -151,6 +162,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onChangeText={value => updateFormData('product_name', value)}
               error={errors.product_name}
               required
+              leftIcon="tag-outline"
             />
 
             <InputCustom
@@ -161,6 +173,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               keyboardType="decimal-pad"
               error={errors.weight}
               required
+              leftIcon="weight-kilogram"
             />
 
             <InputCustom
@@ -170,7 +183,16 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onChangeText={value => updateFormData('variety', value)}
               error={errors.variety}
               required
+              leftIcon="leaf-maple"
             />
+          </View>
+
+          {/* Cultivation Details Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Icon name="sprout-outline" size={20} color={theme.colors.primary} />
+              <Text style={styles.sectionTitle}>Cultivation Details</Text>
+            </View>
 
             <DatePicker
               label="Planting Date"
@@ -178,6 +200,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onChange={date => updateFormData('planting_date', date)}
               maximumDate={new Date()}
               required
+              leftIcon="calendar-blank-outline"
             />
 
             <DatePicker
@@ -187,6 +210,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               minimumDate={formData.planting_date}
               maximumDate={new Date()}
               required
+              leftIcon="calendar-check-outline"
             />
 
             <SelectCustom
@@ -197,6 +221,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               placeholder="Select cultivation method"
               error={errors.cultivation_method}
               required
+              leftIcon="flower-outline"
             />
 
             <LocationPicker
@@ -205,7 +230,16 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onChange={location => updateFormData('location', location)}
               error={errors.location}
               required
+              leftIcon="map-marker-outline"
             />
+          </View>
+
+          {/* Images Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Icon name="image-outline" size={20} color={theme.colors.primary} />
+              <Text style={styles.sectionTitle}>Images</Text>
+            </View>
 
             <ImagePicker
               label="Farm Image"
@@ -213,6 +247,8 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onImageSelected={uri => updateFormData('farm_image', uri)}
               error={errors.farm_image}
               required
+              description="Upload a photo of your farm"
+              placeholder="farm_placeholder.jpg"
             />
 
             <ImagePicker
@@ -221,20 +257,25 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onImageSelected={uri => updateFormData('product_image', uri)}
               error={errors.product_image}
               required
+              description="Upload a photo of your product"
+              placeholder="product_placeholder.jpg"
             />
 
             <ImagePicker
               label="Farmer Image"
               imageUri={formData.farmer_image}
               onImageSelected={uri => updateFormData('farmer_image', uri)}
-            />
-
-            <ButtonCustom
-              title="Create Batch"
-              onPress={handleCreateBatch}
-              style={styles.createButton}
+              description="Upload your profile photo (optional)"
+              placeholder="farmer_placeholder.jpg"
             />
           </View>
+
+          <ButtonCustom
+            title="Create Batch"
+            onPress={handleCreateBatch}
+            style={styles.createButton}
+            icon="package-variant-plus"
+          />
         </ScrollView>
       </KeyboardAvoidingView>
       <LoadingOverlay visible={loading} message="Creating batch..." />
@@ -245,19 +286,44 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: '#F8FAFC',
   },
   keyboardAvoidingView: {
     flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
-  },
-  content: {
     padding: theme.spacing.lg,
   },
+  section: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  sectionTitle: {
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: theme.typography.fontSize.lg,
+    color: theme.colors.text,
+    marginLeft: theme.spacing.sm,
+  },
   createButton: {
-    marginVertical: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
   },
 });
 

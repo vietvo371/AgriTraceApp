@@ -10,6 +10,7 @@ export type RootStackParamList = {
   BatchList: undefined;
   BatchDetail: { batchId: string };
   AdminDashboard: undefined;
+  Notifications: undefined;
 };
 
 export type MainTabParamList = {
