@@ -8,6 +8,9 @@ import {
   Platform,
   PermissionsAndroid,
   Alert,
+  StyleProp,
+  ViewStyle,
+  ImageStyle,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
@@ -19,6 +22,9 @@ interface ImagePickerProps {
   label?: string;
   error?: string;
   required?: boolean;
+  containerStyle?: StyleProp<ViewStyle>;
+  isCircle?: boolean;
+  size?: number;
 }
 
 const ImagePicker: React.FC<ImagePickerProps> = ({
@@ -27,6 +33,9 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
   label,
   error,
   required = false,
+  containerStyle,
+  isCircle = false,
+  size = 120,
 }) => {
   const requestCameraPermission = async () => {
     if (Platform.OS === 'android') {
@@ -115,8 +124,27 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
     }
   };
 
+  const imageContainerStyle: ViewStyle = isCircle ? {
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    overflow: 'hidden',
+  } : {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    borderRadius: theme.borderRadius.md,
+  };
+
+  const imageStyle: ImageStyle = isCircle ? {
+    width: size,
+    height: size,
+  } : {
+    width: '100%',
+    height: '100%',
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       {label && (
         <Text style={styles.label}>
           {label}
@@ -125,29 +153,21 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
       )}
       <View style={[styles.imageContainer, error ? styles.errorBorder : {}]}>
         {imageUri ? (
-          <View style={styles.imageWrapper}>
-            <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
+          <View style={[styles.imageWrapper, imageContainerStyle]}>
+            <Image source={{ uri: imageUri }} style={[styles.image, imageStyle]} />
             <TouchableOpacity
-              style={styles.changeButton}
+              style={[styles.changeButton, isCircle && styles.circleChangeButton]}
               onPress={handleChoosePhoto}>
-              <Text style={styles.changeButtonText}>Change Photo</Text>
+              <Icon name="camera" size={24} color={theme.colors.white} />
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleTakePhoto}>
-              <Icon name="camera" size={24} color={theme.colors.primary} />
-              <Text style={styles.buttonText}>Take Photo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleChoosePhoto}>
-              <Icon name="image" size={24} color={theme.colors.primary} />
-              <Text style={styles.buttonText}>Choose from Gallery</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={[styles.emptyContainer, imageContainerStyle]}
+            onPress={handleChoosePhoto}>
+            <Icon name="camera-plus" size={32} color={theme.colors.primary} />
+            <Text style={styles.emptyText}>Add Photo</Text>
+          </TouchableOpacity>
         )}
       </View>
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -158,6 +178,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginBottom: theme.spacing.md,
+    alignItems: 'center',
   },
   label: {
     fontFamily: theme.typography.fontFamily.medium,
@@ -169,22 +190,15 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
   },
   imageContainer: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.white,
-    overflow: 'hidden',
+    alignItems: 'center',
   },
   errorBorder: {
     borderColor: theme.colors.error,
   },
   imageWrapper: {
-    width: '100%',
-    aspectRatio: 16 / 9,
+    backgroundColor: theme.colors.background,
   },
   image: {
-    width: '100%',
-    height: '100%',
     resizeMode: 'cover',
   },
   changeButton: {
@@ -196,25 +210,24 @@ const styles = StyleSheet.create({
     padding: theme.spacing.sm,
     alignItems: 'center',
   },
-  changeButtonText: {
-    color: theme.colors.white,
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.sm,
+  circleChangeButton: {
+    bottom: 0,
+    height: '35%',
+    justifyContent: 'center',
   },
-  buttonContainer: {
-    padding: theme.spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  button: {
+  emptyContainer: {
+    backgroundColor: theme.colors.background,
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderStyle: 'dashed',
   },
-  buttonText: {
+  emptyText: {
     marginTop: theme.spacing.xs,
-    color: theme.colors.primary,
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.primary,
   },
   errorText: {
     fontFamily: theme.typography.fontFamily.regular,

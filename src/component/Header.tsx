@@ -16,6 +16,7 @@ interface HeaderProps {
   onBack?: () => void;
   rightComponent?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -24,9 +25,10 @@ const Header: React.FC<HeaderProps> = ({
   onBack,
   rightComponent,
   style,
+  containerStyle,
 }) => {
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, containerStyle, style]}>
       <View style={styles.leftContainer}>
         {showBack && (
           <TouchableOpacity onPress={onBack} style={styles.backButton}>

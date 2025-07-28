@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Platform,
-  PermissionsAndroid,
+  Alert,
 } from 'react-native';
-import { RNCamera } from 'react-native-camera';
+import { Camera, useCameraDevice, useCameraPermission, useCodeScanner } from 'react-native-vision-camera';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
 
@@ -17,50 +16,35 @@ interface QRScannerProps {
 }
 
 const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [isScanning, setIsScanning] = useState(true);
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const [isActive, setIsActive] = useState(true);
+  const device = useCameraDevice('back');
 
-  const requestCameraPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          {
-            title: 'Camera Permission',
-            message: 'AgriTrace needs access to your camera to scan QR codes.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          },
-        );
-        setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
-      } catch (err) {
-        console.warn(err);
-        setHasPermission(false);
+  const codeScanner = useCodeScanner({
+    codeTypes: ['qr'],
+    onCodeScanned: (codes) => {
+      if (codes.length > 0 && codes[0].value && isActive) {
+        setIsActive(false);
+        onScan(codes[0].value);
       }
-    } else {
-      setHasPermission(true);
     }
-  };
+  });
 
-  React.useEffect(() => {
-    requestCameraPermission();
-  }, []);
-
-  const handleBarCodeScanned = ({ data }: { data: string }) => {
-    if (isScanning) {
-      setIsScanning(false);
-      onScan(data);
+  const handleRequestPermission = useCallback(async () => {
+    try {
+      const granted = await requestPermission();
+      if (!granted) {
+        Alert.alert(
+          'Permission Denied',
+          'Please enable camera access in your device settings to use this feature.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (err) {
+      console.warn('Error requesting camera permission:', err);
+      Alert.alert('Error', 'Failed to request camera permission');
     }
-  };
-
-  if (hasPermission === null) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.text}>Requesting camera permission...</Text>
-      </View>
-    );
-  }
+  }, [requestPermission]);
 
   if (hasPermission === false) {
     return (
@@ -68,41 +52,49 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, onClose }) => {
         <Text style={styles.text}>No access to camera</Text>
         <TouchableOpacity
           style={styles.button}
-          onPress={requestCameraPermission}>
+          onPress={handleRequestPermission}>
           <Text style={styles.buttonText}>Grant Permission</Text>
         </TouchableOpacity>
+        {onClose && (
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Icon name="close" size={24} color={theme.colors.white} />
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
+  if (device == null) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.text}>No camera found</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <RNCamera
-        style={styles.camera}
-        type={RNCamera.Constants.Type.back}
-        onBarCodeRead={handleBarCodeScanned}
-        captureAudio={false}
-        androidCameraPermissionOptions={{
-          title: 'Permission to use camera',
-          message: 'We need your permission to use your camera',
-          buttonPositive: 'Ok',
-          buttonNegative: 'Cancel',
-        }}>
-        <View style={styles.overlay}>
-          <View style={styles.unfocusedContainer}></View>
-          <View style={styles.focusedContainer}>
-            <View style={styles.unfocusedContainer}></View>
-            <View style={styles.focusedBox}>
-              <View style={[styles.corner, styles.topLeft]} />
-              <View style={[styles.corner, styles.topRight]} />
-              <View style={[styles.corner, styles.bottomLeft]} />
-              <View style={[styles.corner, styles.bottomRight]} />
-            </View>
-            <View style={styles.unfocusedContainer}></View>
+      <Camera
+        style={StyleSheet.absoluteFill}
+        device={device}
+        isActive={isActive}
+        codeScanner={codeScanner}
+        enableZoomGesture
+      />
+      <View style={[StyleSheet.absoluteFill, styles.overlay]}>
+        <View style={styles.unfocusedContainer} />
+        <View style={styles.focusedContainer}>
+          <View style={styles.unfocusedContainer} />
+          <View style={styles.focusedBox}>
+            <View style={[styles.corner, styles.topLeft]} />
+            <View style={[styles.corner, styles.topRight]} />
+            <View style={[styles.corner, styles.bottomLeft]} />
+            <View style={[styles.corner, styles.bottomRight]} />
           </View>
-          <View style={styles.unfocusedContainer}></View>
+          <View style={styles.unfocusedContainer} />
         </View>
-      </RNCamera>
+        <View style={styles.unfocusedContainer} />
+      </View>
       {onClose && (
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
           <Icon name="close" size={24} color={theme.colors.white} />
@@ -122,9 +114,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.black,
-  },
-  camera: {
-    flex: 1,
   },
   text: {
     color: theme.colors.white,

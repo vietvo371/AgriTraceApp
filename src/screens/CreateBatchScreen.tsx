@@ -230,7 +230,6 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onChange={location => updateFormData('location', location)}
               error={errors.location}
               required
-              leftIcon="map-marker-outline"
             />
           </View>
 
@@ -247,8 +246,6 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onImageSelected={uri => updateFormData('farm_image', uri)}
               error={errors.farm_image}
               required
-              description="Upload a photo of your farm"
-              placeholder="farm_placeholder.jpg"
             />
 
             <ImagePicker
@@ -257,16 +254,12 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onImageSelected={uri => updateFormData('product_image', uri)}
               error={errors.product_image}
               required
-              description="Upload a photo of your product"
-              placeholder="product_placeholder.jpg"
             />
 
             <ImagePicker
               label="Farmer Image"
               imageUri={formData.farmer_image}
               onImageSelected={uri => updateFormData('farmer_image', uri)}
-              description="Upload your profile photo (optional)"
-              placeholder="farmer_placeholder.jpg"
             />
           </View>
 
@@ -274,7 +267,6 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
             title="Create Batch"
             onPress={handleCreateBatch}
             style={styles.createButton}
-            icon="package-variant-plus"
           />
         </ScrollView>
       </KeyboardAvoidingView>

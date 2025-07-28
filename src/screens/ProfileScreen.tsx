@@ -29,7 +29,7 @@ const mockUserData = {
   phone_number: '+1 234 567 8900',
   address: 'Green Valley Farm, California',
   role: 'farmer',
-  profile_image: 'https://imgv3.fotor.com/images/blog-richtext-image/10-profile-picture-ideas-to-make-you-stand-out.jpg',
+  profile_image: 'https://icons.veryicon.com/png/o/miscellaneous/rookie-official-icon-gallery/225-default-avatar.png',
   stats: {
     total_batches: 12,
     active_batches: 8,
@@ -162,6 +162,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 setFormData(prev => ({ ...prev, profile_image: uri }))
               }
               error={errors.profile_image}
+              isCircle
+              size={120}
+              containerStyle={styles.imagePicker}
             />
             {!isEditing && (
               <View style={styles.roleContainer}>
@@ -412,6 +415,9 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     marginTop: theme.spacing.md,
+  },
+  imagePicker: {
+    marginBottom: theme.spacing.md,
   },
 });
 

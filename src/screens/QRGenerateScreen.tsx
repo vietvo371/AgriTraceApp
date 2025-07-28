@@ -48,8 +48,8 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
   const [loading, setLoading] = useState(false);
   const { batchId } = route.params;
 
-  // In a real app, this would be your API endpoint
-  const qrValue = `https://agritrace.app/batch/${batchId}`;
+  // Sửa format QR code để phù hợp với code quét
+  const qrValue = `batch:${batchId}`;
 
   const handleDownload = async () => {
     setLoading(true);
