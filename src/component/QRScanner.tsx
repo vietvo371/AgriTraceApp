@@ -9,7 +9,6 @@ import {
 import { Camera, useCameraDevice, useCameraPermission, useCodeScanner } from 'react-native-vision-camera';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
-
 interface QRScannerProps {
   onScan: (data: string) => void;
   onClose?: () => void;
