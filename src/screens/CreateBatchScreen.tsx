@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
@@ -18,17 +19,11 @@ import LocationPicker from '../component/LocationPicker';
 import ImagePicker from '../component/ImagePicker';
 import ButtonCustom from '../component/ButtonCustom';
 import LoadingOverlay from '../component/LoadingOverlay';
+import api from '../utils/Api';
 
 interface CreateBatchScreenProps {
   navigation: any;
 }
-
-const categoryOptions = [
-  { label: 'Fruits', value: 'fruits', icon: 'fruit-cherries' },
-  { label: 'Vegetables', value: 'vegetables', icon: 'carrot' },
-  { label: 'Grains', value: 'grains', icon: 'grain' },
-  { label: 'Nuts', value: 'nuts', icon: 'peanut' },
-];
 
 const cultivationMethodOptions = [
   { label: 'Organic', value: 'organic', icon: 'leaf' },
@@ -37,7 +32,7 @@ const cultivationMethodOptions = [
 
 const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => {
   const [formData, setFormData] = useState({
-    category: '',
+    category_id: '',
     product_name: '',
     weight: '',
     variety: '',
@@ -52,15 +47,28 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
     product_image: '',
     farmer_image: '',
   });
-
+  const [category, setCategory] = useState<any>([]);
+  const [categoryOptions, setCategoryOptions] = useState<any>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  const validateForm = () => {
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const response = await api.get('/categories');
+      setCategory(response.data.data);
+      setCategoryOptions(response.data.data.map((category: any) => ({
+        label: category.name,
+        value: category.id,
+      })));
+    };
+    fetchCategories();
+  }, []);
+
+    const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.category) {
-      newErrors.category = 'Category is required';
+    if (!formData.category_id) {
+      newErrors.category_id = 'Category is required';
     }
 
     if (!formData.product_name) {
@@ -104,13 +112,65 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
 
     setLoading(true);
     try {
-      // TODO: Implement actual batch creation logic here
-      console.log('Creating batch with:', formData);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      navigation.navigate('QRGenerate', { batchId: '123' }); // Pass actual batch ID
-    } catch (error) {
-      console.error('Batch creation error:', error);
-      // Handle error appropriately
+      // Tạo FormData object để gửi file
+      const formDataToSend = new FormData();
+
+      // Thêm các thông tin cơ bản
+      formDataToSend.append('category_id', formData.category_id);
+      formDataToSend.append('product_name', formData.product_name);
+      formDataToSend.append('weight', formData.weight.toString());
+      formDataToSend.append('variety', formData.variety);
+      formDataToSend.append('planting_date', formData.planting_date.toISOString());
+      formDataToSend.append('harvest_date', formData.harvest_date.toISOString());
+      formDataToSend.append('cultivation_method', formData.cultivation_method);
+      formDataToSend.append('location[latitude]', formData.location.latitude.toString());
+      formDataToSend.append('location[longitude]', formData.location.longitude.toString());
+
+      // Thêm các file ảnh
+      if (formData.farm_image) {
+        const farmImageName = formData.farm_image.split('/').pop() || 'farm_image.jpg';
+        formDataToSend.append('farm_image', {
+          uri: formData.farm_image,
+          type: 'image/jpeg',
+          name: farmImageName
+        });
+      }
+
+      if (formData.product_image) {
+        const productImageName = formData.product_image.split('/').pop() || 'product_image.jpg';
+        formDataToSend.append('product_image', {
+          uri: formData.product_image,
+          type: 'image/jpeg',
+          name: productImageName
+        });
+      }
+
+      if (formData.farmer_image) {
+        const farmerImageName = formData.farmer_image.split('/').pop() || 'farmer_image.jpg';
+        formDataToSend.append('farmer_image', {
+          uri: formData.farmer_image,
+          type: 'image/jpeg',
+          name: farmerImageName
+        });
+      }
+
+      console.log('Creating batch with:', formDataToSend);
+      const response = await api.post('/batches', formDataToSend, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      console.log(response);
+      navigation.navigate('QRGenerate', { batchId: response.data.data.id });
+    } catch (error: any) {
+      console.error('Batch creation error:', error.response);
+      Alert.alert(
+        'Error',
+        'Failed to create batch. Please try again.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setLoading(false);
     }
@@ -146,13 +206,12 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
 
             <SelectCustom
               label="Category"
-              value={formData.category}
-              onChange={value => updateFormData('category', value)}
+              value={formData.category_id}
+              onChange={value => updateFormData('category_id', value)}
               options={categoryOptions}
               placeholder="Select product category"
-              error={errors.category}
+              error={errors.category_id}
               required
-              leftIcon="shape-outline"
             />
 
             <InputCustom
@@ -200,7 +259,6 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               onChange={date => updateFormData('planting_date', date)}
               maximumDate={new Date()}
               required
-              leftIcon="calendar-blank-outline"
             />
 
             <DatePicker
@@ -210,7 +268,6 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               minimumDate={formData.planting_date}
               maximumDate={new Date()}
               required
-              leftIcon="calendar-check-outline"
             />
 
             <SelectCustom
@@ -221,7 +278,6 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
               placeholder="Select cultivation method"
               error={errors.cultivation_method}
               required
-              leftIcon="flower-outline"
             />
 
             <LocationPicker

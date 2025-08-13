@@ -78,10 +78,10 @@ const BatchCard: React.FC<BatchCardProps> = ({
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={styles.productName} numberOfLines={1}>{batch.product?.name}</Text>
+            <Text style={styles.productName} numberOfLines={1}>{batch.product?.name || batch.product_name}</Text>
             <View style={styles.categoryContainer}>
               <Icon name="tag-outline" size={14} color={theme.colors.textLight} />
-              <Text style={styles.category}>{batch.product?.category?.name}</Text>
+              <Text style={styles.category}>{batch.product?.category?.name || batch.category}</Text>
             </View>
           </View>
           {/* <Badge
@@ -97,11 +97,11 @@ const BatchCard: React.FC<BatchCardProps> = ({
           </View>
           <View style={styles.detailItem}>
             <Icon name="calendar-outline" size={16} color={theme.colors.secondary} />
-            <Text style={styles.detailText}>{convertDate(batch.harvest_date)}</Text>
+            <Text style={styles.detailText}>{convertDate(batch.harvest_date || batch.harvest_date)}</Text>
           </View>
           <View style={styles.detailItem}>
             <Icon name="leaf" size={16} color={theme.colors.accent} />
-            <Text style={styles.detailText}>{batch.cultivation_method}</Text>
+            <Text style={styles.detailText}>{batch.cultivation_method || batch.cultivation_method}</Text>
           </View>
         </View>
       </View>

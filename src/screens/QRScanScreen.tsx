@@ -20,8 +20,7 @@ const QRScanScreen: React.FC<QRScanScreenProps> = ({ navigation }) => {
   const handleScan = async (data: string) => {
     setLoading(true);
     try {
-      // Giả sử QR code chứa ID của batch dưới dạng: "batch:123"
-      const batchId = data.split(':')[1];
+      const batchId = data.split('-')[1];
       if (!batchId) {
         Alert.alert('Error', 'Invalid QR code format');
         return;

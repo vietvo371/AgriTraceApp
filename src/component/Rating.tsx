@@ -79,7 +79,7 @@ const Rating: React.FC<RatingProps> = ({
       )}
       <View style={styles.starsContainer}>
         {[0, 1, 2, 3, 4].map(index => renderStar(index))}
-        <Text style={styles.ratingText}>{value.toFixed(1)}</Text>
+        {/* <Text style={styles.ratingText}>{value.toFixed(1)}</Text> */}
       </View>
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>

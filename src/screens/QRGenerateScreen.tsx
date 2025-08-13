@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,55 +15,34 @@ import QRCode from '../component/QRCode';
 import Card from '../component/Card';
 import ButtonCustom from '../component/ButtonCustom';
 import LoadingOverlay from '../component/LoadingOverlay';
+import api from '../utils/Api';
 
 interface QRGenerateScreenProps {
   navigation: any;
   route: {
     params: {
-      batchId: string;
+      batch: any;
     };
   };
 }
-
-// Mock data - replace with actual API call
-const mockBatchData = {
-  id: '123',
-  product_name: 'Organic Mangoes',
-  category: 'Fruits',
-  weight: 20,
-  variety: 'Alphonso',
-  planting_date: '2024-01-15',
-  harvest_date: '2024-03-15',
-  cultivation_method: 'Organic',
-  farmer: {
-    name: 'John Doe',
-    location: 'Green Valley Farm, California',
-  },
-};
 
 const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
   navigation,
   route,
 }) => {
   const [loading, setLoading] = useState(false);
-  const { batchId } = route.params;
-
-  // Sửa format QR code để phù hợp với code quét
-  const qrValue = `batch:${batchId}`;
-
-  const handleDownload = async () => {
-    setLoading(true);
-    try {
-      // TODO: Implement actual QR code download logic
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate download
-      console.log('QR code downloaded');
-    } catch (error) {
-      console.error('Download error:', error);
-    } finally {
-      setLoading(false);
-    }
+  const { batch } = route.params;
+  console.log(batch);
+  const convertDate = (date: string) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
+  const qrValue =`${batch.traceability.batch_code}-${batch.id}`;
 
+  
   const handleShare = async () => {
     try {
       await Share.share({
@@ -75,7 +54,7 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
   };
 
   const handleViewBatch = () => {
-    navigation.replace('BatchDetail', { batchId });
+    navigation.replace('BatchDetail', { batchId: batch.id });
   };
 
   return (
@@ -100,7 +79,7 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
               size={250}
               showShare
               showDownload
-              onDownload={handleDownload}
+              onDownload={() => {}}
             />
           </View>
 
@@ -108,24 +87,24 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
             <Text style={styles.summaryTitle}>Batch Summary</Text>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Product:</Text>
-              <Text style={styles.summaryValue}>{mockBatchData.product_name}</Text>
+              <Text style={styles.summaryValue}>{batch.product_name}</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Category:</Text>
-              <Text style={styles.summaryValue}>{mockBatchData.category}</Text>
+              <Text style={styles.summaryValue}>{batch.category}</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Weight:</Text>
-              <Text style={styles.summaryValue}>{mockBatchData.weight} kg</Text>
+              <Text style={styles.summaryValue}>{batch.weight} kg</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Harvest Date:</Text>
-              <Text style={styles.summaryValue}>{mockBatchData.harvest_date}</Text>
+              <Text style={styles.summaryValue}>{convertDate(batch.harvest_date)}</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Method:</Text>
               <Text style={styles.summaryValue}>
-                {mockBatchData.cultivation_method}
+                {batch.cultivation_method}
               </Text>
             </View>
           </Card>

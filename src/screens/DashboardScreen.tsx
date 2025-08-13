@@ -48,7 +48,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
       console.log(profile);
       // setUnreadNotifications(notifications);
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      console.log('Error loading dashboard data:', error);
       // Thêm xử lý lỗi ở đây (ví dụ: hiển thị thông báo lỗi)
     } finally {
       setLoading(false);

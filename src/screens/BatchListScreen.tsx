@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,97 +15,125 @@ import Header from '../component/Header';
 import BatchCard from '../component/BatchCard';
 import SelectCustom from '../component/SelectCustom';
 import LoadingOverlay from '../component/LoadingOverlay';
+import api from '../utils/Api';
 
 interface BatchListScreenProps {
   navigation: any;
 }
 
-type BatchStatus = 'active' | 'expired';
-
-interface Batch {
-  id: string;
-  product_name: string;
-  category: string;
-  weight: number;
-  harvest_date: string;
-  cultivation_method: string;
-  image?: string;
-  status: BatchStatus;
+interface BatchListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: 'active' | 'completed' | 'cancelled';
+  sort?: 'newest' | 'oldest';
 }
 
-// Mock data - replace with actual API call
-const mockBatches: Batch[] = [
-  {
-    id: '1',
-    product_name: 'Cat Hoa Loc Mangoes',
-    category: 'Fruits',
-    weight: 20,
-    harvest_date: '15/03/2024',
-    cultivation_method: 'Organic',
-    status: 'active',
-    image: 'https://m.media-amazon.com/images/I/8111GVVXLwL.jpg',
-  },
-  {
-    id: '2',
-    product_name: 'Beef Tomatoes',
-    category: 'Vegetables',
-    weight: 15,
-    harvest_date: '14/03/2024',
-    cultivation_method: 'Traditional',
-    status: 'active',
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSExFuBL_BshlmedZ2KKvVWofJ2UoOpQMOb7g&s',
-  },
-  {
-    id: '3',
-    product_name: 'Brown Rice',
-    category: 'Grains',
-    weight: 50,
-    harvest_date: '28/02/2024',
-    cultivation_method: 'Organic',
-    status: 'expired',
-    image: 'https://intechvietnam.com/uploads/noidung/images/baiviet/quy-trinh-san-xuat-gao.jpg',
-  },
-  {
-    id: '4',
-    product_name: 'Green Apples',
-    category: 'Fruits',
-    weight: 25,
-    harvest_date: '10/03/2024',
-    cultivation_method: 'Traditional',
-    status: 'active',
-    image: 'https://thefreshandnatural.com/wp-content/uploads/2020/05/APPLE-GREEN.jpg',
-  },
-];
+interface BatchListResponse {
+  data: {
+    items: Array<{
+      id: string;
+      product_name: string;
+      category: string;
+      weight: number;
+      harvest_date: string;
+      cultivation_method: string;
+      status: 'active' | 'completed' | 'cancelled';
+      stats: {
+        total_scans: number;
+        unique_customers: number;
+        average_rating: number;
+      };
+      images: {
+        product: string | null;
+      };
+    }>;
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      total_pages: number;
+    };
+  };
+  message: string;
+}
 
-const filterOptions = [
+
+const statusOptions = [
   { label: 'All', value: 'all' },
   { label: 'Active', value: 'active' },
-  { label: 'Expired', value: 'expired' },
+  { label: 'Completed', value: 'completed' },
+  { label: 'Cancelled', value: 'cancelled' },
 ];
 
-const categoryOptions = [
-  { label: 'All Categories', value: 'all' },
-  { label: 'Fruits', value: 'Fruits' },
-  { label: 'Vegetables', value: 'Vegetables' },
-  { label: 'Grains', value: 'Grains' },
-];
 
 const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-
-  const filteredBatches = mockBatches.filter(batch => {
-    const matchesSearch = batch.product_name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === 'all' || batch.status === statusFilter;
-    const matchesCategory =
-      categoryFilter === 'all' || batch.category === categoryFilter;
-    return matchesSearch && matchesStatus && matchesCategory;
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [batches, setBatches] = useState<BatchListResponse['data']['items']>([]);
+  const [pagination, setPagination] = useState<BatchListResponse['data']['pagination']>({
+    total: 0,
+    page: 1,
+    limit: 10,
+    total_pages: 0
   });
+  const [sortOptions, setSortOptions] = useState<any[]>([]);
+  const fetchSortOptions = async () => {
+    try {
+      const response = await api.get<any>('/categories/all-public');
+      console.log(response.data);
+      setSortOptions(response.data.data.map((item: any) => ({
+        label: item.name,
+        value: item.id
+      })));
+    } catch (error: any) {
+      console.error('Error fetching categories:', error.response);
+    }
+  };
+
+  useEffect(() => {
+    fetchSortOptions();
+  }, []);
+
+  const fetchBatches = async (page = currentPage) => {
+    setLoading(true);
+    try {
+      const response = await api.get<BatchListResponse>('/batches/all-farmer', {
+        params: {
+          page,
+          limit: 10,
+          status: statusFilter === 'all' ? undefined : statusFilter,
+          search: searchQuery || undefined,
+          sort: sortOrder
+        }
+      });
+      console.log(response.data);
+      setBatches(response.data.data.items);
+      setPagination(response.data.data.pagination);
+    } catch (error: any) {
+      console.error('Error fetching batches:', error.response);
+      // TODO: Show error message
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch when filters change
+  useEffect(() => {
+    setCurrentPage(1); // Reset to first page
+    fetchBatches(1);
+  }, [statusFilter, searchQuery, sortOrder]);
+
+  // Handle pagination
+  const handleLoadMore = () => {
+    if (currentPage < pagination.total_pages && !loading) {
+      setCurrentPage(prev => prev + 1);
+      fetchBatches(currentPage + 1);
+    }
+  };
 
   const handleBatchPress = (batchId: string) => {
     navigation.navigate('BatchDetail', { batchId });
@@ -123,7 +151,7 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
           placeholderTextColor={theme.colors.textLight}
         />
         {searchQuery ? (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setSearchQuery('')}
             style={styles.clearButton}
           >
@@ -137,23 +165,28 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
           <SelectCustom
             value={statusFilter}
             onChange={setStatusFilter}
-            options={filterOptions}
+            options={statusOptions}
             placeholder="Status"
             containerStyle={styles.selectContainer}
           />
         </View>
         <View style={styles.filterItem}>
           <SelectCustom
-            value={categoryFilter}
-            onChange={setCategoryFilter}
-            options={categoryOptions}
-            placeholder="Category"
+            value={sortOrder}
+            onChange={(value) => setSortOrder(value as any)}
+            options={sortOptions}
+            placeholder="Sort by"
             containerStyle={styles.selectContainer}
           />
         </View>
       </View>
 
-      
+      <View style={styles.resultsHeader}>
+        <Text style={styles.resultsText}>
+          {pagination.total} {pagination.total === 1 ? 'batch' : 'batches'} found
+        </Text>
+      </View>
+
     </View>
   );
 
@@ -170,7 +203,7 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
       <Text style={styles.emptyText}>
         Try adjusting your filters or create a new batch
       </Text>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.createButton}
         onPress={() => navigation.navigate('CreateBatch')}
       >
@@ -187,18 +220,25 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
         onBack={() => navigation.goBack()}
       />
       <FlatList
-        data={filteredBatches}
+        data={batches}
         renderItem={({ item }) => (
           <BatchCard
-            batch={item}
+            batch={item as any}
             onPress={() => handleBatchPress(item.id)}
           />
         )}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmpty}
+        ListEmptyComponent={!loading ? renderEmpty : null}
         showsVerticalScrollIndicator={false}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        refreshing={loading && currentPage === 1}
+        onRefresh={() => {
+          setCurrentPage(1);
+          fetchBatches(1);
+        }}
       />
       <LoadingOverlay visible={loading} />
     </SafeAreaView>

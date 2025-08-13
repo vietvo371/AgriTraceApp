@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import Badge from '../component/Badge';
 import ReviewCard from '../component/ReviewCard';
 import ButtonCustom from '../component/ButtonCustom';
 import LoadingOverlay from '../component/LoadingOverlay';
+import api from '../utils/Api';
 
 interface BatchDetailScreenProps {
   navigation: any;
@@ -28,81 +29,64 @@ interface BatchDetailScreenProps {
   };
 }
 
-// Mock data - replace with actual API call
-const mockBatchData = {
-  id: '123',
-  product_name: 'Organic Mangoes',
-  category: 'Fruits',
-  weight: 20,
-  variety: 'Alphonso',
-  planting_date: '2024-01-15',
-  harvest_date: '2024-03-15',
-  cultivation_method: 'Organic',
-  status: 'active' as const,
-  location: {
-    latitude: 37.78825,
-    longitude: -122.4324,
-    address: 'Green Valley Farm, California',
-  },
-  images: {
-    farm: 'https://example.com/farm.jpg',
-    product: 'https://example.com/product.jpg',
-    farmer: 'https://imgv3.fotor.com/images/blog-richtext-image/10-profile-picture-ideas-to-make-you-stand-out.jpg',
-  },
-  farmer: {
-    name: 'John Doe',
-    phone: '+1 234 567 8900',
-    email: 'john@example.com',
-  },
-  stats: {
-    total_scans: 48,
-    unique_customers: 35,
-    average_rating: 4.5,
-  },
-  certification: {
-    type: 'VietGAP',
-    number: 'VG-123456',
-    validUntil: '2025-03-15',
-  },
-  quality_tests: [
-    {
-      date: '2024-03-10',
-      type: 'Pesticide Residue',
-      result: 'Passed',
-      lab: 'ABC Testing Lab',
-    }
-  ],
-  traceability: {
-    batch_code: 'BT2024031501',
-    packaging_date: '2024-03-15',
-    best_before: '2024-03-30',
-  },
-  sustainability: {
-    water_usage: '120L/kg',
-    carbon_footprint: '0.8kg CO2/kg',
-    pesticide_usage: 'Minimal - Organic methods',
-  },
-  reviews: [
-    {
-      id: '1',
+interface BatchDetailsResponse {
+  data: {
+    id: string;
+    product_name: string;
+    category: string;
+    weight: number;
+    variety: string;
+    planting_date: string;
+    harvest_date: string;
+    cultivation_method: string;
+    status: 'active' | 'completed' | 'cancelled';
+    location: {
+      latitude: number;
+      longitude: number;
+      address: string;
+    };
+    images: {
+      farm: string | null;
+      product: string | null;
+      farmer?: string | null;
+    };
+    traceability: {
+      batch_code: string;
+      packaging_date: string;
+      best_before: string;
+    };
+    stats: {
+      total_scans: number;
+      unique_customers: number;
+      average_rating: number;
+    };
+    farmer: {
+      name: string;
+      phone: string;
+      email: string;
+    };
+    certification: {
+      number: string;
+      validUntil: string;
+    };
+    sustainability: {
+      water_usage: string;
+      carbon_footprint: string;
+      pesticide_usage: string;
+    };
+    reviews: Array<{
+      id: string;
       reviewer: {
-        name: 'Alice Smith',
-      },
-      rating: 5,
-      comment: 'Excellent quality mangoes! Very sweet and fresh.',
-      date: '2024-03-16',
-    },
-    {
-      id: '2',
-      reviewer: {
-        name: 'Bob Johnson',
-      },
-      rating: 4,
-      comment: 'Good taste and quality. Will buy again.',
-      date: '2024-03-15',
-    },
-  ],
-};
+        name: string;
+      };
+      rating: number;
+      comment: string;
+      date: string;
+    }>;
+  };
+  message: string;
+}
+
 
 const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
   navigation,
@@ -110,9 +94,30 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const { batchId } = route.params;
+  const [batch, setBatch] = useState<BatchDetailsResponse['data'] | null>(null);
+  const convertDateToISOString = (date: Date) => {
+    return date.toISOString().split('T')[0];
+  };
+  useEffect(() => {
+    const fetchBatch = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get<BatchDetailsResponse>(`/batches/details/${batchId}`);
+        setBatch(response.data.data);
+      } catch (error: any) {
+        console.error('Error fetching batch details:', error.response);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBatch();
+  }, [batchId]);
+
+  console.log(batchId);
+  console.log(batch);
 
   const handleGenerateQR = () => {
-    navigation.navigate('QRGenerate', { batchId });
+    navigation.navigate('QRGenerate', { batch: batch });
   };
 
   const handleEditBatch = () => {
@@ -144,6 +149,18 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
     </View>
   );
 
+  if (!batch) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Header
+          title="Batch Details"
+          onBack={() => navigation.goBack()}
+        />
+        <LoadingOverlay visible={loading} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
@@ -158,19 +175,19 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
         <View style={styles.headerCard}>
           <View style={styles.headerContent}>
             <View style={styles.titleContainer}>
-              <Text style={styles.productName}>{mockBatchData.product_name}</Text>
+              <Text style={styles.productName}>{batch.product_name}</Text>
               <View style={styles.categoryContainer}>
                 <Icon name="tag-outline" size={16} color={theme.colors.textLight} />
-                <Text style={styles.category}>{mockBatchData.category}</Text>
+                <Text style={styles.category}>{batch.category}</Text>
               </View>
             </View>
             <Badge
-              text={mockBatchData.status.toUpperCase()}
-              variant={mockBatchData.status === 'active' ? 'success' : 'error'}
+              text={batch.status.toUpperCase()}
+              variant={batch.status === 'active' ? 'success' : 'error'}
             />
           </View>
           <View style={styles.batchInfoContainer}>
-            <Text style={styles.batchCode}>Batch Code: {mockBatchData.traceability.batch_code}</Text>
+            <Text style={styles.batchCode}>Batch Code: {batch.traceability.batch_code}</Text>
           </View>
         </View>
 
@@ -178,17 +195,17 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
         <View style={styles.statsGrid}>
           <View style={[styles.statsCard, styles.elevation]}>
             <Icon name="qrcode-scan" size={24} color={theme.colors.primary} />
-            <Text style={styles.statsValue}>{mockBatchData.stats.total_scans}</Text>
+            <Text style={styles.statsValue}>{batch.stats.total_scans}</Text>
             <Text style={styles.statsLabel}>Total Scans</Text>
           </View>
           <View style={[styles.statsCard, styles.elevation]}>
             <Icon name="account-group" size={24} color={theme.colors.secondary} />
-            <Text style={styles.statsValue}>{mockBatchData.stats.unique_customers}</Text>
+            <Text style={styles.statsValue}>{batch.stats.unique_customers}</Text>
             <Text style={styles.statsLabel}>Customers</Text>
           </View>
           <View style={[styles.statsCard, styles.elevation]}>
             <Icon name="star" size={24} color={theme.colors.warning} />
-            <Text style={styles.statsValue}>{mockBatchData.stats.average_rating}</Text>
+            <Text style={styles.statsValue}>{batch.stats.average_rating}</Text>
             <Text style={styles.statsLabel}>Rating</Text>
           </View>
         </View>
@@ -203,19 +220,19 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
             {renderCertificationItem(
               'calendar-check',
               'Packaging Date',
-              mockBatchData.traceability.packaging_date,
+              convertDateToISOString(new Date(batch.traceability.packaging_date)),
               theme.colors.primary
             )}
             {renderCertificationItem(
               'calendar-clock',
               'Best Before',
-              mockBatchData.traceability.best_before,
+              convertDateToISOString(new Date(batch.traceability.best_before)),
               theme.colors.warning
             )}
             {renderCertificationItem(
               'certificate',
               'VietGAP Certification',
-              `${mockBatchData.certification.number} (Valid until ${mockBatchData.certification.validUntil})`,
+              `${batch.certification.number} (Valid until ${batch.certification.validUntil})`,
               theme.colors.success
             )}
           </View>
@@ -228,10 +245,10 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
             <Text style={styles.sectionTitle}>Product Information</Text>
           </View>
           <View style={styles.infoGrid}>
-            {renderInfoItem('weight-kilogram', 'Weight', `${mockBatchData.weight} kg`, theme.colors.primary)}
-            {renderInfoItem('leaf', 'Method', mockBatchData.cultivation_method, theme.colors.secondary)}
-            {renderInfoItem('calendar-blank', 'Planted', mockBatchData.planting_date, theme.colors.accent)}
-            {renderInfoItem('calendar-check', 'Harvested', mockBatchData.harvest_date, theme.colors.success)}
+            {renderInfoItem('weight-kilogram', 'Weight', `${batch.weight} kg`, theme.colors.primary)}
+            {renderInfoItem('leaf', 'Method', batch.cultivation_method, theme.colors.secondary)}
+            {renderInfoItem('calendar-blank', 'Planted', convertDateToISOString(new Date(batch.planting_date)), theme.colors.accent)}
+            {renderInfoItem('calendar-check', 'Harvested', convertDateToISOString(new Date(batch.harvest_date)), theme.colors.success)}
           </View>
         </View>
 
@@ -245,19 +262,19 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
             {renderCertificationItem(
               'water',
               'Water Usage',
-              mockBatchData.sustainability.water_usage,
+              batch.sustainability.water_usage,
               theme.colors.primary
             )}
             {renderCertificationItem(
               'molecule-co2',
               'Carbon Footprint',
-              mockBatchData.sustainability.carbon_footprint,
+              batch.sustainability.carbon_footprint,
               theme.colors.secondary
             )}
             {renderCertificationItem(
               'flask',
               'Pesticide Usage',
-              mockBatchData.sustainability.pesticide_usage,
+              batch.sustainability.pesticide_usage,
               theme.colors.success
             )}
           </View>
@@ -272,20 +289,20 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
           <View style={styles.mapContainer}>
             <View style={styles.addressContainer}>
               <Icon name="home-variant" size={20} color={theme.colors.primary} />
-              <Text style={styles.address}>{mockBatchData.location.address}</Text>
+              <Text style={styles.address}>{batch.location.address}</Text>
             </View>
             <MapView
               style={styles.map}
               initialRegion={{
-                latitude: mockBatchData.location.latitude,
-                longitude: mockBatchData.location.longitude,
+                latitude: batch.location.latitude,
+                longitude: batch.location.longitude,
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
               }}>
               <Marker
                 coordinate={{
-                  latitude: mockBatchData.location.latitude,
-                  longitude: mockBatchData.location.longitude,
+                  latitude: batch.location.latitude,
+                  longitude: batch.location.longitude,
                 }}
               />
             </MapView>
@@ -300,18 +317,18 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
           </View>
           <View style={styles.farmerCard}>
             <Image
-              source={{ uri: mockBatchData.images.farmer }}
+              source={batch.images.farmer ? { uri: batch.images.farmer } : require('../assets/images/avatar.jpeg')}
               style={styles.farmerImage}
             />
             <View style={styles.farmerDetails}>
-              <Text style={styles.farmerName}>{mockBatchData.farmer.name}</Text>
+              <Text style={styles.farmerName}>{batch.farmer.name}</Text>
               <View style={styles.contactItem}>
                 <Icon name="phone" size={16} color={theme.colors.primary} />
-                <Text style={styles.farmerContact}>{mockBatchData.farmer.phone}</Text>
+                <Text style={styles.farmerContact}>{batch.farmer.phone}</Text>
               </View>
               <View style={styles.contactItem}>
                 <Icon name="email" size={16} color={theme.colors.primary} />
-                <Text style={styles.farmerContact}>{mockBatchData.farmer.email}</Text>
+                <Text style={styles.farmerContact}>{batch.farmer.email}</Text>
               </View>
             </View>
           </View>
@@ -324,7 +341,7 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
             <Text style={styles.sectionTitle}>Customer Reviews</Text>
           </View>
           <View style={styles.reviewsContainer}>
-            {mockBatchData.reviews.map(review => (
+            {batch.reviews.map((review: BatchDetailsResponse['data']['reviews'][0]) => (
               <ReviewCard
                 key={review.id}
                 reviewer={review.reviewer}
@@ -599,5 +616,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BatchDetailScreen; 
 export default BatchDetailScreen; 
