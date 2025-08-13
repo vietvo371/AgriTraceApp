@@ -38,7 +38,7 @@ export interface UserProfile {
 
 
 const baseUrl = Platform.select({
-    ios: 'http://localhost:8000/api',
+    ios: 'http://192.168.1.105:8000/api',
     android: 'http://10.0.2.2:8000/api',
 });
 

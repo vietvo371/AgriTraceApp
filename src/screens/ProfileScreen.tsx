@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -17,52 +17,69 @@ import InputCustom from '../component/InputCustom';
 import ButtonCustom from '../component/ButtonCustom';
 import LoadingOverlay from '../component/LoadingOverlay';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../utils/Api';
 
 interface ProfileScreenProps {
   navigation: any;
 }
-
-// Mock data - replace with actual API call
-const mockUserData = {
-  id: '123',
-  full_name: 'John Doe',
-  email: 'john@example.com',
-  phone_number: '+1 234 567 8900',
-  address: 'Green Valley Farm, California',
-  role: 'farmer',
-  profile_image: 'https://icons.veryicon.com/png/o/miscellaneous/rookie-official-icon-gallery/225-default-avatar.png',
-  stats: {
-    total_batches: 12,
-    active_batches: 8,
-    total_scans: 156,
-    average_rating: 4.8,
-  },
-};
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const { user, signOut } = useAuth();
   const [formData, setFormData] = useState({
-    full_name: user?.full_name,
-    email: user?.email,
-    phone_number: user?.phone_number,
-    address: user?.address,
-    profile_image: user?.profile_image,
+    full_name: '',
+    email: '',
+    phone_number: '',
+    address: '',
+    profile_image: '',
+  });
+  const [profileData, setProfileData] = useState({
+    'id': "",
+    'full_name': "",
+    'email': "",
+    'phone_number': "",
+    'address': "",
+    'role': "",
+    'profile_image': "",
+    'stats': {
+      'total_batches': "",
+      'active_batches': "",
+      'total_scans': "",
+      'average_rating': ""
+    }
+
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const fetchUser = async () => {
+    try {
+      const response = await api.get('/user/profile');
+      setProfileData(response.data.data);
+      setFormData({
+        full_name: response.data.data.full_name,
+        email: response.data.data.email,
+        phone_number: response.data.data.phone_number,
+        address: response.data.data.address,
+        profile_image: response.data.data.profile_image,
+      });
+    } catch (error: any) {
+      console.error('Error fetching user:', error.response);
+    }
+  };
+  useEffect(() => {
+    fetchUser();
+  }, []);
   const handleEdit = () => {
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setFormData({
-      full_name: user?.full_name,
-      email: user?.email,
-      phone_number: user?.phone_number,
-      address: user?.address,
-      profile_image: user?.profile_image,
+      full_name: profileData.full_name,
+      email: profileData.email,
+      phone_number: profileData.phone_number,
+      address: profileData.address,
+      profile_image: profileData.profile_image,
     });
     setErrors({});
     setIsEditing(false);
@@ -102,12 +119,22 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
     setLoading(true);
     try {
-      // TODO: Implement actual profile update
       console.log('Updating profile with:', formData);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      const delay = new Promise(resolve => setTimeout(resolve, 1000));
+      const [response] = await Promise.all([
+        api.put('/user/profile', formData),
+        delay,
+      ]);
+      console.log('Updating profile with:', response.data.data);
+      // Optional: đồng bộ lại dữ liệu hiển thị
+      setProfileData(prev => ({
+        ...prev,
+        ...response.data.data,
+        stats: prev.stats,
+      }));
       setIsEditing(false);
-    } catch (error) {
-      console.error('Profile update error:', error);
+    } catch (error: any) {
+      console.log('Profile update error:', error.response);
       Alert.alert('Error', 'Failed to update profile');
     } finally {
       setLoading(false);
@@ -160,7 +187,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         <View style={styles.profileHeader}>
           <View style={styles.imageContainer}>
             <ImagePicker
-              imageUri={formData.profile_image}
+              imageUri={profileData.profile_image}
               onImageSelected={uri =>
                 setFormData(prev => ({ ...prev, profile_image: uri }))
               }
@@ -169,13 +196,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               size={120}
               containerStyle={styles.imagePicker}
             />
-            <Text style={styles.roleText}>{mockUserData.full_name}</Text>
+            <Text style={styles.roleText}>{profileData.full_name}</Text>
             {!isEditing && (
               <View style={styles.roleContainer}>
                 <Icon name="shield-account-outline" size={16} color={theme.colors.primary} />
                 <Text style={styles.roleText}>
-                  {mockUserData.role.charAt(0).toUpperCase() +
-                    mockUserData.role.slice(1)}
+                  {profileData.role?.charAt(0).toUpperCase() +
+                    profileData.role?.slice(1)}
                 </Text>
               </View>
             )}
@@ -187,28 +214,28 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 <View style={[styles.statIcon, { backgroundColor: theme.colors.primary + '15' }]}>
                   <Icon name="package-variant-closed" size={24} color={theme.colors.primary} />
                 </View>
-                <Text style={styles.statValue}>{mockUserData.stats.total_batches}</Text>
+                <Text style={styles.statValue}>{profileData.stats.total_batches}</Text>
                 <Text style={styles.statLabel}>Total Batches</Text>
               </View>
               <View style={styles.statCard}>
                 <View style={[styles.statIcon, { backgroundColor: theme.colors.success + '15' }]}>
                   <Icon name="package-variant" size={24} color={theme.colors.success} />
                 </View>
-                <Text style={styles.statValue}>{mockUserData.stats.active_batches}</Text>
+                <Text style={styles.statValue}>{profileData.stats.active_batches}</Text>
                 <Text style={styles.statLabel}>Active Batches</Text>
               </View>
               <View style={styles.statCard}>
                 <View style={[styles.statIcon, { backgroundColor: theme.colors.secondary + '15' }]}>
                   <Icon name="qrcode-scan" size={24} color={theme.colors.secondary} />
                 </View>
-                <Text style={styles.statValue}>{mockUserData.stats.total_scans}</Text>
+                <Text style={styles.statValue}>{profileData.stats.total_scans}</Text>
                 <Text style={styles.statLabel}>Total Scans</Text>
               </View>
               <View style={styles.statCard}>
                 <View style={[styles.statIcon, { backgroundColor: theme.colors.warning + '15' }]}>
                   <Icon name="star-outline" size={24} color={theme.colors.warning} />
                 </View>
-                <Text style={styles.statValue}>{mockUserData.stats.average_rating}</Text>
+                <Text style={styles.statValue}>{profileData.stats.average_rating}</Text>
                 <Text style={styles.statLabel}>Avg Rating</Text>
               </View>
             </View>
@@ -242,7 +269,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               error={errors.email}
-              editable={isEditing}
+              editable={!isEditing}
               required
             />
 
@@ -328,7 +355,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary + '10',
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.borderRadius.lg,
     marginTop: theme.spacing.md,
   },
   roleText: {

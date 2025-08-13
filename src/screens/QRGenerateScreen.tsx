@@ -40,7 +40,7 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
       day: 'numeric',
     });
   };
-  const qrValue =`${batch.traceability.batch_code}-${batch.id}`;
+  const qrValue =` ${"http://192.168.1.105:8000"}-${batch.traceability.batch_code}-${batch.id}`;
 
   
   const handleShare = async () => {

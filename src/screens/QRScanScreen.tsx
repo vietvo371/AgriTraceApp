@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 import { theme } from '../theme/colors';
 import QRScanner from '../component/QRScanner';
 import LoadingOverlay from '../component/LoadingOverlay';
+import { useIsFocused } from '@react-navigation/native';
 
 interface QRScanScreenProps {
   navigation: any;
@@ -16,11 +17,12 @@ interface QRScanScreenProps {
 
 const QRScanScreen: React.FC<QRScanScreenProps> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
+  const isFocused = useIsFocused();
 
   const handleScan = async (data: string) => {
     setLoading(true);
     try {
-      const batchId = data.split('-')[1];
+      const batchId = data.split('-')[3];
       if (!batchId) {
         Alert.alert('Error', 'Invalid QR code format');
         return;
@@ -38,10 +40,12 @@ const QRScanScreen: React.FC<QRScanScreenProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <QRScanner
-        onScan={handleScan}
-        onClose={() => navigation.goBack()}
-      />
+      {isFocused && (
+        <QRScanner
+          onScan={handleScan}
+          onClose={() => navigation.goBack()}
+        />
+      )}
       <LoadingOverlay visible={loading} />
     </SafeAreaView>
   );
