@@ -22,6 +22,16 @@ interface BatchCardProps {
     cultivation_method: string;
     image?: string;
     status: 'active' | 'expired';
+    customer_id: string;
+    product_id: string;
+    batch_code: string;
+    variety: string;
+    planting_date: string;
+    customer: any;
+    product: any;
+    reviews: any;
+    images: any;
+    access_logs: any;
   };
   onPress?: () => void;
   style?: ViewStyle;
@@ -32,6 +42,13 @@ const BatchCard: React.FC<BatchCardProps> = ({
   onPress,
   style,
 }) => {
+  const convertDate = (date: string) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
   const getStatusVariant = () => {
     return batch.status === 'active' ? 'success' : 'error';
   };
@@ -61,17 +78,17 @@ const BatchCard: React.FC<BatchCardProps> = ({
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={styles.productName} numberOfLines={1}>{batch.product_name}</Text>
+            <Text style={styles.productName} numberOfLines={1}>{batch.product?.name}</Text>
             <View style={styles.categoryContainer}>
               <Icon name="tag-outline" size={14} color={theme.colors.textLight} />
-              <Text style={styles.category}>{batch.category}</Text>
+              <Text style={styles.category}>{batch.product?.category?.name}</Text>
             </View>
           </View>
-          <Badge
+          {/* <Badge
             text={getStatusText()}
             variant={getStatusVariant()}
             size="small"
-          />
+          /> */}
         </View>
         <View style={styles.details}>
           <View style={styles.detailItem}>
@@ -80,7 +97,7 @@ const BatchCard: React.FC<BatchCardProps> = ({
           </View>
           <View style={styles.detailItem}>
             <Icon name="calendar-outline" size={16} color={theme.colors.secondary} />
-            <Text style={styles.detailText}>{batch.harvest_date}</Text>
+            <Text style={styles.detailText}>{convertDate(batch.harvest_date)}</Text>
           </View>
           <View style={styles.detailItem}>
             <Icon name="leaf" size={16} color={theme.colors.accent} />

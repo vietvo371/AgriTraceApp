@@ -16,6 +16,7 @@ import ImagePicker from '../component/ImagePicker';
 import InputCustom from '../component/InputCustom';
 import ButtonCustom from '../component/ButtonCustom';
 import LoadingOverlay from '../component/LoadingOverlay';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ProfileScreenProps {
   navigation: any;
@@ -41,12 +42,13 @@ const mockUserData = {
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user, signOut } = useAuth();
   const [formData, setFormData] = useState({
-    full_name: mockUserData.full_name,
-    email: mockUserData.email,
-    phone_number: mockUserData.phone_number,
-    address: mockUserData.address,
-    profile_image: mockUserData.profile_image,
+    full_name: user?.full_name,
+    email: user?.email,
+    phone_number: user?.phone_number,
+    address: user?.address,
+    profile_image: user?.profile_image,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -56,11 +58,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
   const handleCancel = () => {
     setFormData({
-      full_name: mockUserData.full_name,
-      email: mockUserData.email,
-      phone_number: mockUserData.phone_number,
-      address: mockUserData.address,
-      profile_image: mockUserData.profile_image,
+      full_name: user?.full_name,
+      email: user?.email,
+      phone_number: user?.phone_number,
+      address: user?.address,
+      profile_image: user?.profile_image,
     });
     setErrors({});
     setIsEditing(false);
@@ -126,6 +128,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           style: 'destructive',
           onPress: () => {
             // TODO: Implement actual logout logic
+            signOut();
             navigation.replace('Login');
           },
         },
@@ -166,6 +169,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               size={120}
               containerStyle={styles.imagePicker}
             />
+            <Text style={styles.roleText}>{mockUserData.full_name}</Text>
             {!isEditing && (
               <View style={styles.roleContainer}>
                 <Icon name="shield-account-outline" size={16} color={theme.colors.primary} />

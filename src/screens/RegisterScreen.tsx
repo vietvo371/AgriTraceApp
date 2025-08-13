@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { theme } from '../theme/colors';
+import { useAuth } from '../contexts/AuthContext';
 import Header from '../component/Header';
 import InputCustom from '../component/InputCustom';
 import ButtonCustom from '../component/ButtonCustom';
@@ -30,14 +31,15 @@ const roleOptions = [
 ];
 
 const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     full_name: '',
     phone_number: '',
     email: '',
     password: '',
-    confirm_password: '',
+    password_confirmation: '',
     address: '',
-    role: '',
+    role: 'farmer',
     profile_image: '',
   });
 
@@ -71,38 +73,48 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       newErrors.password = 'Password must be at least 6 characters';
     }
 
-    if (!formData.confirm_password) {
-      newErrors.confirm_password = 'Please confirm your password';
-    } else if (formData.password !== formData.confirm_password) {
-      newErrors.confirm_password = 'Passwords do not match';
+    if (!formData.password_confirmation) {
+      newErrors.password_confirmation = 'Please confirm your password';
+    } else if (formData.password !== formData.password_confirmation) {
+      newErrors.password_confirmation = 'Passwords do not match';
     }
 
     if (!formData.address) {
       newErrors.address = 'Address is required';
     }
 
-    if (!formData.role) {
-      newErrors.role = 'Please select a role';
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleRegister = async () => {
-    if (!validateForm()) {
+    const isValid = validateForm();
+    if (!isValid) {
       return;
     }
-
+    console.log('Proceeding with registration...');
     setLoading(true);
     try {
-      // TODO: Implement actual registration logic here
-      console.log('Registration attempt with:', formData);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      navigation.replace('Dashboard');
-    } catch (error) {
+      await signUp(formData);
+      navigation.replace('Login');
+    } catch (error: any) {
       console.error('Registration error:', error);
-      // Handle error appropriately
+      
+      // Xử lý lỗi validation từ API
+      if (error.errors) {
+        // Cập nhật tất cả các lỗi từ API
+        const newErrors: Record<string, string> = {};
+        Object.keys(error.errors).forEach(field => {
+          newErrors[field] = error.errors[field][0];
+        });
+        setErrors(newErrors);
+      } else {
+        // Xử lý các lỗi khác (network, timeout...)
+        setErrors({
+          email: error.message
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -168,6 +180,17 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   leftIcon="phone-outline"
                   containerStyle={styles.input}
                 />
+                <InputCustom
+                  label="Address"
+                  placeholder="Enter your address"
+                  value={formData.address}
+                  onChangeText={value => updateFormData('address', value)}
+                  keyboardType="default"
+                  error={errors.address}
+                  required
+                  leftIcon="map-marker-outline"
+                  containerStyle={styles.input}
+                />
 
                 <InputCustom
                   label="Email"
@@ -199,10 +222,10 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 <InputCustom
                   label="Confirm Password"
                   placeholder="Confirm your password"
-                  value={formData.confirm_password}
-                  onChangeText={value => updateFormData('confirm_password', value)}
+                  value={formData.password_confirmation}
+                  onChangeText={value => updateFormData('password_confirmation', value)}
                   secureTextEntry={!showConfirmPassword}
-                  error={errors.confirm_password}
+                  error={errors.password_confirmation}
                   required
                   leftIcon="lock-check-outline"
                   rightIcon={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
@@ -210,7 +233,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   containerStyle={styles.input}
                 />
 
-                <SelectCustom
+                {/* <SelectCustom
                   label="Role"
                   value={formData.role}
                   onChange={value => updateFormData('role', value)}
@@ -219,7 +242,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   error={errors.role}
                   required
                   containerStyle={styles.input}
-                />
+                /> */}
 
                 <ButtonCustom
                   title="Create Account"

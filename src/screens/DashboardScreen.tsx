@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,74 +8,62 @@ import {
   Image,
   TouchableOpacity,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
 import StatsCard from '../component/StatsCard';
 import BatchCard from '../component/BatchCard';
+import { dashboardApi, UserProfile, DashboardStats, Batch } from '../utils/Api';
+import LoadingOverlay from '../component/LoadingOverlay';
 
 interface DashboardScreenProps {
   navigation: any;
 }
 
-const mockUser = {
-  full_name: 'John Smith',
-  role: 'farmer',
-  farm_name: 'Green Farm',
-  profile_image: require('../assets/images/avt.png'),
-};
-
-const mockStats = [
-  {
-    title: 'Total Batches',
-    subtitle: 'Active batches',
-    value: '12',
-    icon: 'cube-outline',
-    iconColor: theme.colors.primary,
-    trend: { value: 25, isPositive: true },
-  },
-  {
-    title: 'QR Scans',
-    subtitle: 'Last 30 days',
-    value: '48',
-    icon: 'qrcode-scan',
-    iconColor: theme.colors.secondary,
-    trend: { value: 15, isPositive: true },
-  },
-  {
-    title: 'Products',
-    subtitle: 'Types registered',
-    value: '8',
-    icon: 'sprout-outline',
-    iconColor: theme.colors.accent,
-    trend: { value: 10, isPositive: false },
-  },
-];
-
-const mockRecentBatches = [
-  {
-    id: '1',
-    product_name: 'Cat Hoa Loc Mangoes',
-    category: 'Fruits',
-    weight: 20,
-    harvest_date: '15/03/2024',
-    cultivation_method: 'Organic',
-    status: 'active' as const,
-    image: 'https://m.media-amazon.com/images/I/8111GVVXLwL.jpg',
-  },
-  {
-    id: '2',
-    product_name: 'Beef Tomatoes',
-    category: 'Vegetables',
-    weight: 15,
-    harvest_date: '14/03/2024',
-    cultivation_method: 'Traditional',
-    status: 'active' as const,
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSExFuBL_BshlmedZ2KKvVWofJ2UoOpQMOb7g&s',
-  },
-];
+const defaultProfileImage = require('../assets/images/avt.png');
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [recentBatches, setRecentBatches] = useState<Batch[]>([]);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  const loadDashboardData = async () => {
+    try {
+      const [profile, stats, batches] = await Promise.all([
+        dashboardApi.getUserProfile(),
+        dashboardApi.getDashboardStats(),
+        dashboardApi.getRecentBatches(),
+        // dashboardApi.getUnreadNotificationCount(),
+      ]);
+
+      setUserProfile(profile);
+      setDashboardStats(stats);
+      setRecentBatches(batches);
+      console.log(batches);
+      console.log(stats);
+      console.log(profile);
+      // setUnreadNotifications(notifications);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      // Thêm xử lý lỗi ở đây (ví dụ: hiển thị thông báo lỗi)
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadDashboardData();
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
   const handleCreateBatch = () => {
     navigation.navigate('CreateBatch');
   };
@@ -92,24 +80,35 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
     navigation.navigate('BatchDetail', { batchId });
   };
 
+  if (loading) {
+    return <LoadingOverlay visible={true} message="Loading dashboard..." />;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         {/* Header Section */}
         <View style={styles.header}>
           <TouchableOpacity onPress={handleViewProfile} style={styles.userSection}>
-            <Image source={mockUser.profile_image} style={styles.avatar} />
+            <Image 
+              source={userProfile?.profile_image ? { uri: userProfile.profile_image } : defaultProfileImage} 
+              style={styles.avatar} 
+            />
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>{mockUser.full_name}</Text>
+              <Text style={styles.userName}>{userProfile?.full_name || 'Loading...'}</Text>
               <View style={styles.farmInfo}>
                 <Icon name="home-variant" size={16} color={theme.colors.primary} />
-                <Text style={styles.farmName}>{mockUser.farm_name}</Text>
+                <Text style={styles.farmName}>{userProfile?.farm_name || 'farm...'}</Text>
               </View>
             </View>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.notificationButton}>
             <Icon name="bell-outline" size={24} color={theme.colors.text} />
-            <View style={styles.notificationBadge} />
+            {unreadNotifications > 0 && <View style={styles.notificationBadge} />}
           </TouchableOpacity>
         </View>
 
@@ -144,18 +143,37 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             </View>
           </View>
           <View style={styles.statsContainer}>
-            {mockStats.map((stat, index) => (
-              <StatsCard
-                key={index}
-                title={stat.title}
-                subtitle={stat.subtitle}
-                value={stat.value}
-                icon={stat.icon}
-                iconColor={stat.iconColor}
-                trend={stat.trend}
-                style={styles.statsCard}
-              />
-            ))}
+            {dashboardStats && (
+              <>
+                <StatsCard
+                  title="Total Batches"
+                  subtitle="Active batches"
+                  value={dashboardStats.batches.total.toString()}
+                  icon="cube-outline"
+                  iconColor={theme.colors.primary}
+                  trend={dashboardStats.batches.trend}
+                  style={styles.statsCard}
+                />
+                <StatsCard
+                  title="QR Scans"
+                  subtitle="Last 30 days"
+                  value={dashboardStats.qr_scans.total.toString()}
+                  icon="qrcode-scan"
+                  iconColor={theme.colors.secondary}
+                  trend={dashboardStats.qr_scans.trend}
+                  style={styles.statsCard}
+                />
+                <StatsCard
+                  title="Products"
+                  subtitle="Types registered"
+                  value={dashboardStats.products.total.toString()}
+                  icon="sprout-outline"
+                  iconColor={theme.colors.accent}
+                  trend={dashboardStats.products.trend}
+                  style={styles.statsCard}
+                />
+              </>
+            )}
           </View>
         </View>
 
@@ -174,13 +192,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             </TouchableOpacity>
           </View>
           <View style={styles.batchesContainer}>
-            {mockRecentBatches.map(batch => (
+            {recentBatches.map(batch => (
               <BatchCard
                 key={batch.id}
                 batch={batch}
                 onPress={() => handleBatchPress(batch.id)}
               />
             ))}
+            {recentBatches.length === 0 && (
+              <Text style={styles.emptyText}>No recent batches found</Text>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -410,6 +431,13 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.primary,
     marginRight: 4,
+  },
+  emptyText: {
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.textLight,
+    textAlign: 'center',
+    marginVertical: theme.spacing.xl,
   },
 });
 

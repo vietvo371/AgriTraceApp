@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CommonActions, NavigationProp } from '@react-navigation/native';
 import api from "./Api";
-import SCREEN_NAME from "../share";
 import Toast from "react-native-toast-message";
 
 export const saveToken = async (token: string) => {
@@ -30,7 +29,7 @@ export const checkToken = async (navigation: NavigationProp<any>) => {
                 navigation.dispatch(
                     CommonActions.reset({
                         index: 0,
-                        routes: [{ name: SCREEN_NAME.LOGIN }],
+                        routes: [{ name: "Login" }],
                     })
                 );
                 Toast.show({
@@ -45,7 +44,7 @@ export const checkToken = async (navigation: NavigationProp<any>) => {
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
-                routes: [{ name: SCREEN_NAME.LOGIN }],
+                routes: [{ name: "Login" }],
             })
         );
         Toast.show({

@@ -59,13 +59,23 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
     setLoading(true);
     try {
-      // TODO: Implement actual login logic here
-      console.log('Login attempt with:', { email, password });
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await signIn({ email, password });
       navigation.replace('MainTabs');
-    } catch (error) {
-      console.error('Login error:', error);
-      // Handle error appropriately
+    } catch (error: any) {
+      console.log('Login error:', error);
+      
+      // Xử lý lỗi validation từ API
+      if (error.errors) {
+        setErrors({
+          email: error.errors.email?.[0],
+          password: error.errors.password?.[0]
+        });
+      } else {
+        // Xử lý các lỗi khác (network, timeout...)
+        setErrors({
+          email: error.message
+        });
+      }
     } finally {
       setLoading(false);
     }
