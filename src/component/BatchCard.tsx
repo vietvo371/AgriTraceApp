@@ -63,9 +63,9 @@ const BatchCard: React.FC<BatchCardProps> = ({
       onPress={onPress}
       activeOpacity={0.8}>
       <View style={styles.imageContainer}>
-        {batch.image ? (
+        {batch.images && batch.images.length > 0 && batch.images.find((image: any) => image.image_type === "product") ? (
           <Image
-            source={{ uri: batch.image }}
+            source={{ uri: batch.images.find((image: any) => image.image_type === "product").image_url }}
             style={styles.image}
             resizeMode="cover"
           />
