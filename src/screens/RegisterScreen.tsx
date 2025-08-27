@@ -52,35 +52,35 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.full_name) {
-      newErrors.full_name = 'Full name is required';
+      newErrors.full_name = 'Họ và tên là bắt buộc';
     }
 
     if (!formData.phone_number) {
-      newErrors.phone_number = 'Phone number is required';
+      newErrors.phone_number = 'Số điện thoại là bắt buộc';
     } else if (!/^\+?[\d\s-]{10,}$/.test(formData.phone_number)) {
-      newErrors.phone_number = 'Please enter a valid phone number';
+      newErrors.phone_number = 'Vui lòng nhập số điện thoại hợp lệ';
     }
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email là bắt buộc';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = 'Vui lòng nhập email hợp lệ';
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Mật khẩu là bắt buộc';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     }
 
     if (!formData.password_confirmation) {
-      newErrors.password_confirmation = 'Please confirm your password';
+      newErrors.password_confirmation = 'Vui lòng xác nhận mật khẩu';
     } else if (formData.password !== formData.password_confirmation) {
-      newErrors.password_confirmation = 'Passwords do not match';
+      newErrors.password_confirmation = 'Mật khẩu không khớp';
     }
 
     if (!formData.address) {
-      newErrors.address = 'Address is required';
+      newErrors.address = 'Địa chỉ là bắt buộc';
     }
 
 
@@ -146,21 +146,21 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             showsVerticalScrollIndicator={false}>
             <View style={styles.content}>
               <View style={styles.formContainer}>
-                <Text style={styles.title}>Join AgriTrace</Text>
+                <Text style={styles.title}>Tham gia AgriTrace</Text>
                 <Text style={styles.subtitle}>
-                  Create an account to start tracking your agricultural products
+                  Tạo tài khoản để bắt đầu theo dõi sản phẩm nông nghiệp của bạn
                 </Text>
 
                 <ImagePicker
-                  label="Profile Image"
+                  label="Ảnh đại diện"
                   imageUri={formData.profile_image}
                   onImageSelected={uri => updateFormData('profile_image', uri)}
                   containerStyle={styles.imagePicker}
                 />
 
                 <InputCustom
-                  label="Full Name"
-                  placeholder="Enter your full name"
+                  label="Họ và tên"
+                  placeholder="Nhập họ và tên của bạn"
                   value={formData.full_name}
                   onChangeText={value => updateFormData('full_name', value)}
                   error={errors.full_name}
@@ -170,8 +170,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 />
 
                 <InputCustom
-                  label="Phone Number"
-                  placeholder="Enter your phone number"
+                  label="Số điện thoại"
+                  placeholder="Nhập số điện thoại của bạn"
                   value={formData.phone_number}
                   onChangeText={value => updateFormData('phone_number', value)}
                   keyboardType="phone-pad"
@@ -181,8 +181,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   containerStyle={styles.input}
                 />
                 <InputCustom
-                  label="Address"
-                  placeholder="Enter your address"
+                  label="Địa chỉ"
+                  placeholder="Nhập địa chỉ của bạn"
                   value={formData.address}
                   onChangeText={value => updateFormData('address', value)}
                   keyboardType="default"
@@ -194,7 +194,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
                 <InputCustom
                   label="Email"
-                  placeholder="Enter your email"
+                  placeholder="Nhập email của bạn"
                   value={formData.email}
                   onChangeText={value => updateFormData('email', value)}
                   keyboardType="email-address"
@@ -206,8 +206,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 />
 
                 <InputCustom
-                  label="Password"
-                  placeholder="Enter your password"
+                  label="Mật khẩu"
+                  placeholder="Nhập mật khẩu của bạn"
                   value={formData.password}
                   onChangeText={value => updateFormData('password', value)}
                   secureTextEntry={!showPassword}
@@ -220,8 +220,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 />
 
                 <InputCustom
-                  label="Confirm Password"
-                  placeholder="Confirm your password"
+                  label="Xác nhận mật khẩu"
+                  placeholder="Xác nhận mật khẩu của bạn"
                   value={formData.password_confirmation}
                   onChangeText={value => updateFormData('password_confirmation', value)}
                   secureTextEntry={!showConfirmPassword}
@@ -245,7 +245,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 /> */}
 
                 <ButtonCustom
-                  title="Create Account"
+                  title="Tạo tài khoản"
                   onPress={handleRegister}
                   style={styles.registerButton}
                 />
@@ -254,7 +254,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
-      <LoadingOverlay visible={loading} message="Creating your account..." />
+      <LoadingOverlay visible={loading} message="Đang tạo tài khoản..." />
     </SafeAreaView>
   );
 };

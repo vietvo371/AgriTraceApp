@@ -37,15 +37,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     const newErrors: { email?: string; password?: string } = {};
 
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email là bắt buộc';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = 'Vui lòng nhập email hợp lệ';
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Mật khẩu là bắt buộc';
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     }
 
     setErrors(newErrors);
@@ -100,9 +100,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   resizeMode="contain"
                 />
                 <View style={styles.titleContainer}>
-                  <Text style={styles.title}>Welcome Back!</Text>
+                  <Text style={styles.title}>Chào mừng trở lại!</Text>
                   <Text style={styles.subtitle}>
-                    Sign in to continue tracking your agricultural products
+                    Đăng nhập để tiếp tục theo dõi sản phẩm nông nghiệp của bạn
                   </Text>
                 </View>
               </View>
@@ -111,7 +111,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 <View style={styles.form}>
                   <InputCustom
                     label="Email"
-                    placeholder="Enter your email"
+                    placeholder="Nhập email của bạn"
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -123,8 +123,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   />
 
                   <InputCustom
-                    label="Password"
-                    placeholder="Enter your password"
+                    label="Mật khẩu"
+                    placeholder="Nhập mật khẩu của bạn"
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
@@ -137,11 +137,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   />
 
                   <TouchableOpacity style={styles.forgotPassword}>
-                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                    <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
                   </TouchableOpacity>
 
                   <ButtonCustom
-                    title="Sign In"
+                    title="Đăng nhập"
                     onPress={handleLogin}
                     style={styles.loginButton}
                   />
@@ -149,7 +149,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
                 <View style={styles.dividerContainer}>
                   <View style={styles.divider} />
-                  <Text style={styles.dividerText}>OR</Text>
+                  <Text style={styles.dividerText}>HOẶC</Text>
                   <View style={styles.divider} />
                 </View>
 
@@ -169,8 +169,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   onPress={() => navigation.navigate('Register')}
                   style={styles.registerLink}>
                   <Text style={styles.registerText}>
-                    Don't have an account?{' '}
-                    <Text style={styles.registerLinkText}>Sign Up</Text>
+                    Chưa có tài khoản?{' '}
+                    <Text style={styles.registerLinkText}>Đăng ký</Text>
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -178,7 +178,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
-      <LoadingOverlay visible={loading} message="Signing in..." />
+      <LoadingOverlay visible={loading} message="Đang đăng nhập..." />
     </SafeAreaView>
   );
 };

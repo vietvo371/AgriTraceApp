@@ -75,13 +75,13 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ navigation })
 
     if (diffInHours < 24) {
       return diffInHours === 0 
-        ? 'Just now'
-        : `${diffInHours}h ago`;
+        ? 'Vừa xong'
+        : `${diffInHours} giờ trước`;
     }
 
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) {
-      return `${diffInDays}d ago`;
+      return `${diffInDays} ngày trước`;
     }
 
     return date.toLocaleDateString('en-US', {
@@ -109,12 +109,12 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ navigation })
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="Notifications"
+        title="Thông báo"
         onBack={() => navigation.goBack()}
         rightComponent={
           unreadCount > 0 ? (
             <TouchableOpacity onPress={handleMarkAllRead} style={styles.markAllButton}>
-              <Text style={styles.markAllText}>Mark all read</Text>
+              <Text style={styles.markAllText}>Đánh dấu tất cả đã đọc</Text>
             </TouchableOpacity>
           ) : null
         }

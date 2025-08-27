@@ -40,13 +40,13 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
       day: 'numeric',
     });
   };
-  const qrValue =` ${"http://localhost:8000/qr-code"}-${batch.traceability.batch_code}-${batch.id}`;
+  const qrValue =` ${"http://192.168.1.107:8000/batch-qr-code/qrcode"}-${batch.traceability.batch_code}-${batch.id}`;
 
   
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out my agricultural product: ${qrValue}`,
+        message: `Xem sản phẩm nông nghiệp của tôi: ${qrValue}`,
       });
     } catch (error) {
       console.error('Share error:', error);
@@ -60,17 +60,16 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="QR Code Generated"
+        title="Đã tạo mã QR"
         onBack={() => navigation.goBack()}
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.title}>
-            Your QR code has been generated successfully!
+            Mã QR của bạn đã được tạo thành công!
           </Text>
           <Text style={styles.subtitle}>
-            Share this QR code with your customers to let them track the origin of
-            your products.
+            Chia sẻ mã QR này với khách hàng để họ có thể theo dõi nguồn gốc sản phẩm.
           </Text>
 
           <View style={styles.qrContainer}>
@@ -84,25 +83,25 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
           </View>
 
           <Card variant="outlined" style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Batch Summary</Text>
+            <Text style={styles.summaryTitle}>Tóm tắt lô hàng</Text>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Product:</Text>
+              <Text style={styles.summaryLabel}>Sản phẩm:</Text>
               <Text style={styles.summaryValue}>{batch.product_name}</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Category:</Text>
+              <Text style={styles.summaryLabel}>Danh mục:</Text>
               <Text style={styles.summaryValue}>{batch.category}</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Weight:</Text>
+              <Text style={styles.summaryLabel}>Khối lượng:</Text>
               <Text style={styles.summaryValue}>{batch.weight} kg</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Harvest Date:</Text>
+              <Text style={styles.summaryLabel}>Ngày thu hoạch:</Text>
               <Text style={styles.summaryValue}>{convertDate(batch.harvest_date)}</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Method:</Text>
+              <Text style={styles.summaryLabel}>Phương pháp:</Text>
               <Text style={styles.summaryValue}>
                 {batch.cultivation_method}
               </Text>
@@ -111,20 +110,20 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
 
           <View style={styles.actions}>
             <ButtonCustom
-              title="Share QR Code"
+              title="Chia sẻ mã QR"
               onPress={handleShare}
               variant="outline"
               style={styles.actionButton}
             />
             <ButtonCustom
-              title="View Batch Details"
+              title="Xem chi tiết lô"
               onPress={handleViewBatch}
               style={styles.actionButton}
             />
           </View>
         </View>
       </ScrollView>
-      <LoadingOverlay visible={loading} message="Downloading QR code..." />
+      <LoadingOverlay visible={loading} message="Đang tải mã QR..." />
     </SafeAreaView>
   );
 };

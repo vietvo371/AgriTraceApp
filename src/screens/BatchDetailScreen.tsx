@@ -150,7 +150,7 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
     return (
       <SafeAreaView style={styles.container}>
         <Header
-          title="Batch Details"
+          title="Chi tiết lô"
           onBack={() => navigation.goBack()}
         />
         <LoadingOverlay visible={loading} />
@@ -161,7 +161,7 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="Batch Details"
+        title="Chi tiết lô"
         onBack={() => navigation.goBack()}
       />
       <ScrollView 
@@ -184,7 +184,7 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
             />
           </View>
           <View style={styles.batchInfoContainer}>
-            <Text style={styles.batchCode}>Batch Code: {batch.traceability?.batch_code || 'N/A'}</Text>
+            <Text style={styles.batchCode}>Mã lô: {batch.traceability?.batch_code || 'N/A'}</Text>
           </View>
         </View>
 
@@ -243,13 +243,13 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
         <View style={[styles.section, styles.elevation]}>
           <View style={styles.sectionHeader}>
             <Icon name="information" size={24} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>Product Information</Text>
+            <Text style={styles.sectionTitle}>Thông tin sản phẩm</Text>
           </View>
           <View style={styles.infoGrid}>
-            {renderInfoItem('weight-kilogram', 'Weight', `${batch.weight || 0} kg`, theme.colors.primary)}
-            {renderInfoItem('leaf', 'Method', batch.cultivation_method || 'N/A', theme.colors.secondary)}
-            {renderInfoItem('calendar-blank', 'Planted', batch.planting_date ? convertDateToISOString(new Date(batch.planting_date)) : 'N/A', theme.colors.accent)}
-            {renderInfoItem('calendar-check', 'Harvested', batch.harvest_date ? convertDateToISOString(new Date(batch.harvest_date)) : 'N/A', theme.colors.success)}
+            {renderInfoItem('weight-kilogram', 'Khối lượng', `${batch.weight || 0} kg`, theme.colors.primary)}
+            {renderInfoItem('leaf', 'Phương pháp', batch.cultivation_method || 'N/A', theme.colors.secondary)}
+            {renderInfoItem('calendar-blank', 'Ngày gieo trồng', batch.planting_date ? convertDateToISOString(new Date(batch.planting_date)) : 'N/A', theme.colors.accent)}
+            {renderInfoItem('calendar-check', 'Ngày thu hoạch', batch.harvest_date ? convertDateToISOString(new Date(batch.harvest_date)) : 'N/A', theme.colors.success)}
           </View>
         </View>
 

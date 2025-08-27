@@ -86,11 +86,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   };
 
   if (loading) {
-    return <LoadingOverlay visible={true} message="Loading dashboard..." />;
+    return <LoadingOverlay visible={true} message="Đang tải bảng điều khiển..." />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
+      <LinearGradient 
+        colors={[theme.colors.primary + '5', theme.colors.white]} 
+        style={styles.backgroundContainer}
+      ></LinearGradient>
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -121,7 +125,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                   <View style={styles.statusDot} />
                 </View>
                 <View style={styles.profileInfo}>
-                  <Text style={styles.welcomeText}>Welcome back,</Text>
+                  <Text style={styles.welcomeText}>Chào mừng trở lại,</Text>
                   <Text style={styles.profileName}>{userProfile?.full_name || 'Loading...'}</Text>
                   <View style={styles.locationRow}>
                     <Icon name="map-marker" size={12} color="rgba(255,255,255,0.8)" />
@@ -149,7 +153,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           
           {/* Quick Actions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
+            <Text style={styles.sectionTitle}>Thao tác nhanh</Text>
             <View style={styles.actionsGrid}>
               <TouchableOpacity 
                 style={[styles.actionCard, styles.primaryAction]} 
@@ -157,7 +161,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                 <View style={styles.actionIconContainer}>
                   <Icon name="plus" size={28} color="white" />
                 </View>
-                <Text style={styles.actionLabel}>New Batch</Text>
+                <Text style={styles.actionLabel}>Tạo lô mới</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -166,7 +170,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                 <View style={styles.actionIconContainer}>
                   <Icon name="format-list-bulleted" size={28} color="white" />
                 </View>
-                <Text style={styles.actionLabel}>View All</Text>
+                <Text style={styles.actionLabel}>Xem tất cả</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -174,7 +178,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                 <View style={styles.actionIconContainer}>
                   <Icon name="qrcode" size={28} color="white" />
                 </View>
-                <Text style={styles.actionLabel}>QR Code</Text>
+                <Text style={styles.actionLabel}>Mã QR</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -182,9 +186,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           {/* Performance Overview */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Performance Overview</Text>
+              <Text style={styles.sectionTitle}>Tổng quan hiệu suất</Text>
               <TouchableOpacity style={styles.filterButton}>
-                <Text style={styles.filterText}>This Month</Text>
+                <Text style={styles.filterText}>Tháng này</Text>
                 <Icon name="chevron-down" size={16} color={theme.colors.primary} />
               </TouchableOpacity>
             </View>
@@ -203,8 +207,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                       </View>
                     </View>
                     <Text style={styles.performanceValue}>{dashboardStats.batches.total}</Text>
-                    <Text style={styles.performanceLabel}>Total Batches</Text>
-                    <Text style={styles.performanceSubtext}>Active tracking</Text>
+                    <Text style={styles.performanceLabel}>Tổng số lô</Text>
+                    <Text style={styles.performanceSubtext}>Đang được theo dõi</Text>
                   </View>
 
                   <View style={styles.performanceCard}>
@@ -218,8 +222,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                       </View>
                     </View>
                     <Text style={styles.performanceValue}>{dashboardStats.qr_scans.total}</Text>
-                    <Text style={styles.performanceLabel}>QR Scans</Text>
-                    <Text style={styles.performanceSubtext}>Last 30 days</Text>
+                    <Text style={styles.performanceLabel}>Lượt quét QR</Text>
+                    <Text style={styles.performanceSubtext}>30 ngày qua</Text>
                   </View>
 
                   <View style={styles.performanceCardFull}>
@@ -233,8 +237,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                       </View>
                     </View>
                     <Text style={styles.performanceValue}>{dashboardStats.products.total}</Text>
-                    <Text style={styles.performanceLabel}>Product Types</Text>
-                    <Text style={styles.performanceSubtext}>Registered in system</Text>
+                    <Text style={styles.performanceLabel}>Loại sản phẩm</Text>
+                    <Text style={styles.performanceSubtext}>Đã đăng ký trong hệ thống</Text>
                   </View>
                 </>
               )}
@@ -244,11 +248,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           {/* Recent Batches */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent Batches</Text>
+              <Text style={styles.sectionTitle}>Lô gần đây</Text>
               <TouchableOpacity 
                 onPress={handleViewAllBatches} 
                 style={styles.viewAllBtn}>
-                <Text style={styles.viewAllText}>View All</Text>
+                <Text style={styles.viewAllText}>Xem tất cả</Text>
                 <Icon name="arrow-right" size={16} color={theme.colors.primary} />
               </TouchableOpacity>
             </View>
@@ -268,12 +272,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
                 <View style={styles.emptyIconContainer}>
                   <Icon name="package-variant" size={40} color="#E0E0E0" />
                 </View>
-                <Text style={styles.emptyTitle}>No Recent Batches</Text>
-                <Text style={styles.emptySubtitle}>Create your first batch to start tracking</Text>
+                <Text style={styles.emptyTitle}>Chưa có lô gần đây</Text>
+                <Text style={styles.emptySubtitle}>Tạo lô đầu tiên để bắt đầu theo dõi</Text>
                 <TouchableOpacity 
                   style={styles.emptyButton}
                   onPress={handleCreateBatch}>
-                  <Text style={styles.emptyButtonText}>Create First Batch</Text>
+                  <Text style={styles.emptyButtonText}>Tạo lô đầu tiên</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -287,7 +291,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: theme.colors.white,
+  },
+  backgroundContainer: {
+    ...StyleSheet.absoluteFillObject,
   },
   scrollContent: {
     paddingBottom: 20,

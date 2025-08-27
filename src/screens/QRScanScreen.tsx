@@ -24,7 +24,7 @@ const QRScanScreen: React.FC<QRScanScreenProps> = ({ navigation }) => {
     try {
       const batchId = data.split('-')[3];
       if (!batchId) {
-        Alert.alert('Error', 'Invalid QR code format');
+        Alert.alert('Lỗi', 'Định dạng mã QR không hợp lệ');
         return;
       }
       
@@ -32,7 +32,7 @@ const QRScanScreen: React.FC<QRScanScreenProps> = ({ navigation }) => {
       navigation.navigate('BatchDetail', { batchId });
     } catch (error) {
       console.error('Scan error:', error);
-      Alert.alert('Error', 'Failed to process QR code');
+      Alert.alert('Lỗi', 'Không thể xử lý mã QR');
     } finally {
       setLoading(false);
     }

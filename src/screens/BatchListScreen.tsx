@@ -63,10 +63,10 @@ interface BatchListResponse {
 }
 
 const statusOptions = [
-  { label: 'All', value: 'all' },
-  { label: 'Active', value: 'active' },
-  { label: 'Completed', value: 'completed' },
-  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Tất cả', value: 'all' },
+  { label: 'Đang hoạt động', value: 'active' },
+  { label: 'Hoàn thành', value: 'completed' },
+  { label: 'Đã hủy', value: 'cancelled' },
 ];
 
 const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
@@ -196,7 +196,7 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
         <Icon name="magnify" size={24} color={theme.colors.primary} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search by product name..."
+          placeholder="Tìm theo tên sản phẩm..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholderTextColor={theme.colors.textLight}
@@ -217,7 +217,7 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
             value={statusFilter}
             onChange={setStatusFilter}
             options={statusOptions}
-            placeholder="Status"
+            placeholder="Trạng thái"
             containerStyle={styles.selectContainer}
           />
         </View>
@@ -226,7 +226,7 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
             value={sortOrder}
             onChange={(value) => setSortOrder(value as any)}
             options={sortOptions}
-            placeholder="Sort by"
+            placeholder="Sắp xếp theo"
             containerStyle={styles.selectContainer}
           />
         </View>
@@ -234,7 +234,7 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
 
       <View style={styles.resultsHeader}>
         <Text style={styles.resultsText}>
-          {pagination.total} {pagination.total === 1 ? 'batch' : 'batches'} found
+          Đã tìm thấy {pagination.total} lô
         </Text>
       </View>
     </View>
@@ -249,16 +249,16 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
           color={theme.colors.primary}
         />
       </View>
-      <Text style={styles.emptyTitle}>No Batches Found</Text>
+      <Text style={styles.emptyTitle}>Không tìm thấy lô nào</Text>
       <Text style={styles.emptyText}>
-        Try adjusting your filters or create a new batch
+        Hãy điều chỉnh bộ lọc hoặc tạo lô mới
       </Text>
       <TouchableOpacity
         style={styles.createButton}
         onPress={() => navigation.navigate('CreateBatch')}
       >
         <Icon name="plus" size={20} color={theme.colors.white} />
-        <Text style={styles.createButtonText}>Create New Batch</Text>
+        <Text style={styles.createButtonText}>Tạo lô mới</Text>
       </TouchableOpacity>
     </View>
   );
@@ -274,7 +274,7 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="My Batches"
+        title="Lô của tôi"
         onBack={() => navigation.goBack()}
       />
       <FlatList

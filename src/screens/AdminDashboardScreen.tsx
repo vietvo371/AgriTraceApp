@@ -88,15 +88,15 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
 
   const handleDeleteUser = (userId: string) => {
     Alert.alert(
-      'Delete User',
-      'Are you sure you want to delete this user? This action cannot be undone.',
+      'Xóa người dùng',
+      'Bạn có chắc muốn xóa người dùng này? Hành động này không thể hoàn tác.',
       [
         {
-          text: 'Cancel',
+          text: 'Hủy',
           style: 'cancel',
         },
         {
-          text: 'Delete',
+          text: 'Xóa',
           style: 'destructive',
           onPress: () => {
             setLoading(true);
@@ -111,29 +111,29 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Admin Dashboard" showBack={false} />
+      <Header title="Bảng điều khiển quản trị" showBack={false} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.statsContainer}>
           <StatsCard
-            title="Total Users"
+            title="Tổng số người dùng"
             value={mockStats.total_users}
             icon="account-group"
             style={styles.statsCard}
           />
           <StatsCard
-            title="Total Batches"
+            title="Tổng số lô"
             value={mockStats.total_batches}
             icon="package-variant"
             style={styles.statsCard}
           />
           <StatsCard
-            title="Active Batches"
+            title="Lô đang hoạt động"
             value={mockStats.active_batches}
             icon="package-variant-closed-check"
             style={styles.statsCard}
           />
           <StatsCard
-            title="Total Scans"
+            title="Tổng số lượt quét"
             value={mockStats.total_scans}
             icon="qrcode-scan"
             style={styles.statsCard}
@@ -142,18 +142,18 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
 
         <View style={styles.actionsContainer}>
           <ButtonCustom
-            title="Manage Users"
+            title="Quản lý người dùng"
             onPress={handleManageUsers}
             style={styles.actionButton}
           />
           <ButtonCustom
-            title="Manage Categories"
+            title="Quản lý danh mục"
             onPress={handleManageCategories}
             variant="outline"
             style={styles.actionButton}
           />
           <ButtonCustom
-            title="Manage Permissions"
+            title="Quản lý quyền"
             onPress={handleManagePermissions}
             variant="outline"
             style={styles.actionButton}
@@ -162,9 +162,9 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
 
         <Card variant="outlined" style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Users</Text>
+            <Text style={styles.sectionTitle}>Người dùng gần đây</Text>
             <ButtonCustom
-              title="View All"
+              title="Xem tất cả"
               variant="outline"
               size="small"
               onPress={handleManageUsers}
@@ -182,9 +182,9 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
 
         <Card variant="outlined" style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Product Categories</Text>
+            <Text style={styles.sectionTitle}>Danh mục sản phẩm</Text>
             <ButtonCustom
-              title="Manage"
+              title="Quản lý"
               variant="outline"
               size="small"
               onPress={handleManageCategories}
@@ -195,7 +195,7 @@ const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
               <View style={styles.categoryInfo}>
                 <Text style={styles.categoryName}>{category.name}</Text>
                 <Text style={styles.categoryCount}>
-                  {category.total_products} products
+                  {category.total_products} sản phẩm
                 </Text>
               </View>
               <Icon

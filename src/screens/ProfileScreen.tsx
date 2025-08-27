@@ -100,23 +100,23 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.full_name) {
-      newErrors.full_name = 'Full name is required';
+      newErrors.full_name = 'Họ và tên là bắt buộc';
     }
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email là bắt buộc';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = 'Vui lòng nhập email hợp lệ';
     }
 
     if (!formData.phone_number) {
-      newErrors.phone_number = 'Phone number is required';
+      newErrors.phone_number = 'Số điện thoại là bắt buộc';
     } else if (!/^\+?[\d\s-]{10,}$/.test(formData.phone_number)) {
-      newErrors.phone_number = 'Please enter a valid phone number';
+      newErrors.phone_number = 'Vui lòng nhập số điện thoại hợp lệ';
     }
 
     if (!formData.address) {
-      newErrors.address = 'Address is required';
+      newErrors.address = 'Địa chỉ là bắt buộc';
     }
 
     setErrors(newErrors);
@@ -137,10 +137,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         stats: prev.stats,
       }));
       setIsEditing(false);
-      Alert.alert('Success', 'Profile updated successfully');
+      Alert.alert('Thành công', 'Cập nhật hồ sơ thành công');
     } catch (error: any) {
       console.log('Profile update error:', error.response);
-      Alert.alert('Error', 'Failed to update profile');
+      Alert.alert('Lỗi', 'Cập nhật hồ sơ thất bại');
     } finally {
       setLoading(false);
     }
@@ -148,15 +148,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
   const handleLogout = () => {
     Alert.alert(
-      'Confirm Logout',
-      'Are you sure you want to logout?',
+      'Xác nhận đăng xuất',
+      'Bạn có chắc muốn đăng xuất?',
       [
         {
-          text: 'Cancel',
+          text: 'Hủy',
           style: 'cancel',
         },
         {
-          text: 'Logout',
+          text: 'Đăng xuất',
           style: 'destructive',
           onPress: () => {
             signOut();
@@ -193,20 +193,16 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                     containerStyle={styles.avatarContainer}
                   />
                   <View style={styles.userInfo}>
-                    <Text style={styles.userName}>{profileData.full_name || 'User Name'}</Text>
+                    <Text style={styles.userName}>{profileData.full_name || 'Tên người dùng'}</Text>
                     <View style={styles.userBadgeRow}>
                       <View style={styles.verifiedBadge}>
                         <Icon name="shield-check" size={14} color={theme.colors.success} />
-                        <Text style={styles.verifiedText}>Verified User</Text>
-                      </View>
-                      <View style={styles.gradeBadge}>
-                        <Icon name="star" size={14} color={theme.colors.primary} />
-                        <Text style={styles.gradeText}>Role: {profileData.role?.charAt(0).toUpperCase() + profileData.role?.slice(1) || 'User'}</Text>
+                        <Text style={styles.verifiedText}>Người dùng đã xác minh</Text>
                       </View>
                     </View>
                     <View style={styles.locationRow}>
                       <Icon name="map-marker" size={16} color={theme.colors.textLight} />
-                      <Text style={styles.locationText}>{profileData.address || 'Address not specified'}</Text>
+                      <Text style={styles.locationText}>{profileData.address || 'Chưa có địa chỉ'}</Text>
                     </View>
                   </View>
                 </View>
@@ -228,7 +224,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                     <Icon name="package-variant-closed" size={20} color={theme.colors.primary} />
                   </LinearGradient>
                   <Text style={styles.statValue}>{profileData.stats.total_batches}</Text>
-                  <Text style={styles.statLabel}>Total Batches</Text>
+                  <Text style={styles.statLabel}>Tổng số lô</Text>
                 </View>
                 <View style={styles.statItem}>
                   <LinearGradient
@@ -238,7 +234,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                     <Icon name="package-variant" size={20} color={theme.colors.success} />
                   </LinearGradient>
                   <Text style={styles.statValue}>{profileData.stats.active_batches}</Text>
-                  <Text style={styles.statLabel}>Active Batches</Text>
+                  <Text style={styles.statLabel}>Lô đang hoạt động</Text>
                 </View>
                 <View style={styles.statItem}>
                   <LinearGradient
@@ -248,7 +244,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                     <Icon name="qrcode-scan" size={20} color={theme.colors.warning} />
                   </LinearGradient>
                   <Text style={styles.statValue}>{profileData.stats.total_scans}</Text>
-                  <Text style={styles.statLabel}>Total Scans</Text>
+                  <Text style={styles.statLabel}>Tổng lượt quét</Text>
                 </View>
               </View>
             </Card>
@@ -257,9 +253,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           {/* Enhanced Tabs */}
           <View style={styles.tabsContainer}>
             {[
-              { key: 'personal', label: 'Personal' },
-              { key: 'farm', label: 'Farm' },
-              { key: 'achievements', label: 'Achievements' },
+              { key: 'personal', label: 'Cá nhân' },
+              { key: 'farm', label: 'Trang trại' },
+              { key: 'achievements', label: 'Thành tựu' },
             ].map((tab: any) => (
               <TouchableOpacity
                 key={tab.key}
@@ -288,7 +284,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               <Card style={[styles.contentCard, styles.elevation]}>
                 <View style={styles.cardHeader}>
                   <Icon name="account-circle" size={24} color={theme.colors.primary} />
-                  <Text style={styles.cardTitle}>Personal Information</Text>
+                  <Text style={styles.cardTitle}>Thông tin cá nhân</Text>
                 </View>
                 
                 <View style={styles.infoGrid}>
@@ -297,8 +293,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                       <Icon name="account" size={18} color={theme.colors.primary} />
                     </View>
                     <View style={styles.infoContent}>
-                      <Text style={styles.infoLabel}>Full Name</Text>
-                      <Text style={styles.infoValue}>{profileData.full_name || 'Not specified'}</Text>
+                      <Text style={styles.infoLabel}>Họ và tên</Text>
+                      <Text style={styles.infoValue}>{profileData.full_name || 'Chưa có'}</Text>
                     </View>
                   </View>
 
@@ -307,8 +303,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                       <Icon name="phone" size={18} color={theme.colors.info} />
                     </View>
                     <View style={styles.infoContent}>
-                      <Text style={styles.infoLabel}>Phone</Text>
-                      <Text style={styles.infoValue}>{profileData.phone_number || 'Not specified'}</Text>
+                      <Text style={styles.infoLabel}>Số điện thoại</Text>
+                      <Text style={styles.infoValue}>{profileData.phone_number || 'Chưa có'}</Text>
                     </View>
                   </View>
 
@@ -318,7 +314,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                     </View>
                     <View style={styles.infoContent}>
                       <Text style={styles.infoLabel}>Email</Text>
-                      <Text style={styles.infoValue}>{profileData.email || 'Not specified'}</Text>
+                      <Text style={styles.infoValue}>{profileData.email || 'Chưa có'}</Text>
                     </View>
                   </View>
 
@@ -327,8 +323,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                       <Icon name="map-marker" size={18} color={theme.colors.error} />
                     </View>
                     <View style={styles.infoContent}>
-                      <Text style={styles.infoLabel}>Address</Text>
-                      <Text style={styles.infoValue}>{profileData.address || 'Not specified'}</Text>
+                      <Text style={styles.infoLabel}>Địa chỉ</Text>
+                      <Text style={styles.infoValue}>{profileData.address || 'Chưa có'}</Text>
                     </View>
                   </View>
                 </View>
@@ -336,12 +332,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 {isEditing && (
                   <View style={styles.editActions}>
                     <ButtonCustom
-                      title="Save Changes"
+                      title="Lưu thay đổi"
                       onPress={handleSave}
                       style={styles.saveButton}
                     />
                     <ButtonCustom
-                      title="Cancel"
+                      title="Hủy"
                       variant="outline"
                       onPress={handleCancel}
                       style={styles.cancelButton}
@@ -358,27 +354,27 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               <Card style={[styles.contentCard, styles.elevation]}>
                 <View style={styles.cardHeader}>
                   <Icon name="leaf" size={24} color={theme.colors.success} />
-                  <Text style={styles.cardTitle}>Farm Profile</Text>
+                  <Text style={styles.cardTitle}>Hồ sơ trang trại</Text>
                 </View>
                 
                 <View style={styles.farmStatsGrid}>
                   <View style={styles.farmStatItem}>
-                    <Text style={styles.farmStatLabel}>Primary crop</Text>
+                    <Text style={styles.farmStatLabel}>Cây trồng chính</Text>
                     <View style={styles.cropInfo}>
                       <View style={[styles.cropDot, { backgroundColor: theme.colors.success }]} />
-                      <Text style={styles.farmStatValue}>Rice</Text>
+                      <Text style={styles.farmStatValue}>Lúa</Text>
                     </View>
                   </View>
                   <View style={styles.farmStatItem}>
-                    <Text style={styles.farmStatLabel}>Total batches</Text>
+                    <Text style={styles.farmStatLabel}>Tổng số lô</Text>
                     <Text style={styles.farmStatValue}>{profileData.stats.total_batches}</Text>
                   </View>
                   <View style={styles.farmStatItem}>
-                    <Text style={styles.farmStatLabel}>Active batches</Text>
+                    <Text style={styles.farmStatLabel}>Lô đang hoạt động</Text>
                     <Text style={styles.farmStatValue}>{profileData.stats.active_batches}</Text>
                   </View>
                   <View style={styles.farmStatItem}>
-                    <Text style={styles.farmStatLabel}>Total scans</Text>
+                    <Text style={styles.farmStatLabel}>Tổng lượt quét</Text>
                     <Text style={styles.farmStatValue}>{profileData.stats.total_scans}</Text>
                   </View>
                 </View>
@@ -387,16 +383,16 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
                 <View style={styles.yieldSection}>
                   <View style={styles.yieldHeader}>
-                    <Text style={styles.yieldTitle}>Recent Activity</Text>
+                    <Text style={styles.yieldTitle}>Hoạt động gần đây</Text>
                     <View style={styles.yieldBadge}>
-                      <Text style={styles.yieldBadgeText}>Last 30 days</Text>
+                      <Text style={styles.yieldBadgeText}>30 ngày qua</Text>
                     </View>
                   </View>
                   
                   {[
-                    { label: 'Batches Created', value: profileData.stats.total_batches, isHighlight: true },
-                    { label: 'QR Scans', value: profileData.stats.total_scans, isHighlight: false },
-                    { label: 'Average Rating', value: profileData.stats.average_rating, isHighlight: false },
+                    { label: 'Lô đã tạo', value: profileData.stats.total_batches, isHighlight: true },
+                    { label: 'Lượt quét QR', value: profileData.stats.total_scans, isHighlight: false },
+                    { label: 'Đánh giá trung bình', value: profileData.stats.average_rating, isHighlight: false },
                   ].map((item, index) => (
                     <View key={index} style={styles.yieldItem}>
                       <Text style={styles.yieldSeason}>{item.label}</Text>
@@ -419,7 +415,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               <Card style={[styles.contentCard, styles.elevation]}>
                 <View style={styles.cardHeader}>
                   <Icon name="trophy" size={24} color={theme.colors.warning} />
-                  <Text style={styles.cardTitle}>Achievements & Stats</Text>
+                  <Text style={styles.cardTitle}>Thành tựu & Thống kê</Text>
                 </View>
 
                 <View style={styles.achievementsList}>
@@ -433,8 +429,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                       </LinearGradient>
                     </View>
                     <View style={styles.achievementContent}>
-                      <Text style={styles.achievementTitle}>Total Batches</Text>
-                      <Text style={styles.achievementSubtitle}>Successfully created and managed</Text>
+                      <Text style={styles.achievementTitle}>Tổng số lô</Text>
+                      <Text style={styles.achievementSubtitle}>Đã tạo và quản lý thành công</Text>
                     </View>
                     <View style={styles.achievementBadge}>
                       <Text style={styles.achievementBadgeText}>{profileData.stats.total_batches}</Text>
@@ -451,8 +447,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                       </LinearGradient>
                     </View>
                     <View style={styles.achievementContent}>
-                      <Text style={styles.achievementTitle}>QR Scans</Text>
-                      <Text style={styles.achievementSubtitle}>Total customer interactions</Text>
+                      <Text style={styles.achievementTitle}>Lượt quét QR</Text>
+                      <Text style={styles.achievementSubtitle}>Tổng tương tác của khách hàng</Text>
                     </View>
                     <View style={[styles.achievementBadge, { backgroundColor: theme.colors.success + '20' }]}>
                       <Text style={[styles.achievementBadgeText, { color: theme.colors.success }]}>
@@ -471,8 +467,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                       </LinearGradient>
                     </View>
                     <View style={styles.achievementContent}>
-                      <Text style={styles.achievementTitle}>Average Rating</Text>
-                      <Text style={styles.achievementSubtitle}>Customer satisfaction score</Text>
+                      <Text style={styles.achievementTitle}>Đánh giá trung bình</Text>
+                      <Text style={styles.achievementSubtitle}>Điểm hài lòng khách hàng</Text>
                     </View>
                     <View style={[styles.achievementBadge, { backgroundColor: theme.colors.warning + '20' }]}>
                       <Text style={[styles.achievementBadgeText, { color: theme.colors.warning }]}>
@@ -488,7 +484,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           {/* Logout Button */}
           <View style={styles.logoutContainer}>
             <ButtonCustom
-              title="Logout"
+              title="Đăng xuất"
               variant="primary"
               onPress={handleLogout}
               style={styles.logoutButton}
@@ -496,7 +492,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           </View>
         </ScrollView>
       </LinearGradient>
-      <LoadingOverlay visible={loading} message="Updating profile..." />
+      <LoadingOverlay visible={loading} message="Đang cập nhật hồ sơ..." />
     </SafeAreaView>
   );
 };

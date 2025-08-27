@@ -9,9 +9,9 @@ const SettingsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Settings Screen</Text>
+      <Text style={styles.title}>Cài đặt</Text>
       <TouchableOpacity style={styles.button} onPress={signOut}>
-        <Text style={styles.buttonText}>Sign Out</Text>
+        <Text style={styles.buttonText}>Đăng xuất</Text>
       </TouchableOpacity>
     </View>
   );

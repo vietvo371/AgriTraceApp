@@ -30,7 +30,7 @@ interface BatchCardProps {
     customer?: any;
     product?: any;
     reviews?: any;
-    images: any;
+    images?: any;
     access_logs?: any;
     stats?: {
       total_scans: number;
@@ -74,7 +74,7 @@ const BatchCard: React.FC<BatchCardProps> = ({
     return 'Unknown';
   };
 
-  console.log(batch.images.product);
+  console.log(batch.images?.product);
 
   return (
     <TouchableOpacity
@@ -82,9 +82,9 @@ const BatchCard: React.FC<BatchCardProps> = ({
       onPress={onPress}
       activeOpacity={0.8}>
        <View style={styles.imageContainer}>
-        {batch.images && batch.images.length > 0 ? (
+        {batch.images ? (
           <Image
-            source={{ uri: batch.images.find((image: any) => image.image_type === "product")?.image_url || batch.images?.product }}
+            source={{ uri: Array.isArray(batch.images) ? batch.images.find((image: any) => image.image_type === 'product')?.image_url : batch.images?.product }}
             style={styles.image}
             resizeMode="cover"
           />

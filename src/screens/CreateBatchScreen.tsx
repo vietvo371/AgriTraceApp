@@ -86,18 +86,18 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
     const newErrors: Record<string, string> = {};
 
     if (!formData.category_id) {
-      newErrors.category_id = 'Category is required';
+      newErrors.category_id = 'Danh mục là bắt buộc';
     }
     if (!formData.product_name.trim()) {
-      newErrors.product_name = 'Product name is required';
+      newErrors.product_name = 'Tên sản phẩm là bắt buộc';
     }
     if (!formData.weight) {
-      newErrors.weight = 'Weight is required';
+      newErrors.weight = 'Khối lượng là bắt buộc';
     } else if (isNaN(Number(formData.weight)) || Number(formData.weight) <= 0) {
-      newErrors.weight = 'Please enter a valid weight';
+      newErrors.weight = 'Vui lòng nhập khối lượng hợp lệ';
     }
     if (!formData.variety.trim()) {
-      newErrors.variety = 'Variety is required';
+      newErrors.variety = 'Giống là bắt buộc';
     }
 
     setErrors(newErrors);
@@ -108,10 +108,10 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
     const newErrors: Record<string, string> = {};
 
     if (!formData.cultivation_method) {
-      newErrors.cultivation_method = 'Cultivation method is required';
+      newErrors.cultivation_method = 'Phương pháp canh tác là bắt buộc';
     }
     if (!formData.location.location || !formData.location.gps_coordinates) {
-      newErrors.location = 'Location is required';
+      newErrors.location = 'Vị trí là bắt buộc';
     }
 
     setErrors(newErrors);
@@ -122,10 +122,10 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
     const newErrors: Record<string, string> = {};
 
     if (!formData.farm_image) {
-      newErrors.farm_image = 'Farm image is required';
+      newErrors.farm_image = 'Ảnh trang trại là bắt buộc';
     }
     if (!formData.product_image) {
-      newErrors.product_image = 'Product image is required';
+      newErrors.product_image = 'Ảnh sản phẩm là bắt buộc';
     }
 
     setErrors(newErrors);
@@ -208,8 +208,8 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
     } catch (error: any) {
       console.error('Batch creation error:', error.response);
       Alert.alert(
-        'Error',
-        'Failed to create batch. Please try again.',
+        'Lỗi',
+        'Tạo lô thất bại. Vui lòng thử lại.',
         [{ text: 'OK' }]
       );
     } finally {
@@ -234,7 +234,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
           ]}
         />
       </View>
-      <Text style={styles.progressText}>Step {currentStep}/3</Text>
+      <Text style={styles.progressText}>Bước {currentStep}/3</Text>
     </View>
   );
 
@@ -256,26 +256,26 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
       <View style={styles.formSection}>
         <View style={styles.sectionHeader}>
           <Icon name="cube-outline" size={24} color={theme.colors.primary} />
-          <Text style={styles.sectionTitle}>Product Information</Text>
+          <Text style={styles.sectionTitle}>Thông tin sản phẩm</Text>
         </View>
 
         <Text style={styles.sectionDescription}>
-          Enter the basic details about your agricultural product
+          Nhập các thông tin cơ bản về sản phẩm nông nghiệp của bạn
         </Text>
 
         <SelectCustom
-          label="Category"
+          label="Danh mục"
           value={formData.category_id}
           onChange={value => updateFormData('category_id', value)}
           options={categoryOptions}
-          placeholder="Select product category"
+          placeholder="Chọn danh mục sản phẩm"
           error={errors.category_id}
           required
         />
 
         <InputCustom
-          label="Product Name"
-          placeholder="E.g: Organic Rice, Premium Coffee"
+          label="Tên sản phẩm"
+          placeholder="VD: Gạo hữu cơ, Cà phê cao cấp"
           value={formData.product_name}
           onChangeText={value => updateFormData('product_name', value)}
           error={errors.product_name}
@@ -284,8 +284,8 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
         />
 
         <InputCustom
-          label="Weight (kg)"
-          placeholder="Enter weight in kilograms"
+          label="Khối lượng (kg)"
+          placeholder="Nhập khối lượng (kg)"
           value={formData.weight}
           onChangeText={value => updateFormData('weight', value)}
           keyboardType="decimal-pad"
@@ -295,8 +295,8 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
         />
 
         <InputCustom
-          label="Variety"
-          placeholder="E.g: Jasmine Rice, Arabica Coffee"
+          label="Giống"
+          placeholder="VD: Gạo Jasmine, Cà phê Arabica"
           value={formData.variety}
           onChangeText={value => updateFormData('variety', value)}
           error={errors.variety}
@@ -312,16 +312,16 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
       <View style={styles.formSection}>
         <View style={styles.sectionHeader}>
           <Icon name="sprout-outline" size={24} color={theme.colors.success} />
-          <Text style={styles.sectionTitle}>Cultivation Details</Text>
+          <Text style={styles.sectionTitle}>Chi tiết canh tác</Text>
         </View>
 
         <Text style={styles.sectionDescription}>
-          Specify when and how your product was cultivated
+          Xác định thời gian và phương pháp canh tác sản phẩm
         </Text>
 
         <View style={styles.dateItem}>
           <DatePicker
-            label="Planting Date"
+            label="Ngày gieo trồng"
             value={formData.planting_date}
             onChange={date => updateFormData('planting_date', date)}
             maximumDate={new Date()}
@@ -331,7 +331,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
 
         <View style={styles.dateItem}>
           <DatePicker
-            label="Harvest Date"
+            label="Ngày thu hoạch"
             value={formData.harvest_date}
             onChange={date => updateFormData('harvest_date', date)}
             minimumDate={formData.planting_date}
@@ -341,17 +341,17 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
         </View>
 
         <SelectCustom
-          label="Cultivation Method"
+          label="Phương pháp canh tác"
           value={formData.cultivation_method}
           onChange={value => updateFormData('cultivation_method', value)}
           options={cultivationMethodOptions}
-          placeholder="Select cultivation method"
+          placeholder="Chọn phương pháp canh tác"
           error={errors.cultivation_method}
           required
         />
 
         <LocationPicker
-          label="Farm Location"
+          label="Vị trí trang trại"
           value={formData.location}
           onChange={location => updateFormData('location', location)}
           error={errors.location}
@@ -366,34 +366,34 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
       <View style={styles.formSection}>
         <View style={styles.sectionHeader}>
           <Icon name="image-outline" size={24} color={theme.colors.info} />
-          <Text style={styles.sectionTitle}>Documentation Images</Text>
+          <Text style={styles.sectionTitle}>Hình ảnh minh chứng</Text>
         </View>
 
         <Text style={styles.sectionDescription}>
-          Upload photos to document your farming practices and product quality
+          Tải ảnh minh chứng cho quy trình canh tác và chất lượng sản phẩm
         </Text>
 
         <View style={styles.imagesGrid}>
           <View style={styles.imageItem}>
             <ImagePicker
-              label="Farm Image"
+              label="Ảnh trang trại"
               imageUri={formData.farm_image}
               onImageSelected={uri => updateFormData('farm_image', uri)}
               error={errors.farm_image}
               required
             />
-            <Text style={styles.imageHint}>Show your farm field</Text>
+            <Text style={styles.imageHint}>Chụp cánh đồng/trang trại của bạn</Text>
           </View>
 
           <View style={styles.imageItem}>
             <ImagePicker
-              label="Product Image"
+              label="Ảnh sản phẩm"
               imageUri={formData.product_image}
               onImageSelected={uri => updateFormData('product_image', uri)}
               error={errors.product_image}
               required
             />
-            <Text style={styles.imageHint}>Show harvested product</Text>
+            <Text style={styles.imageHint}>Chụp sản phẩm sau thu hoạch</Text>
           </View>
 
         </View>
@@ -402,26 +402,25 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
       <View style={styles.summarySection}>
         <View style={styles.summaryHeader}>
           <Icon name="check-circle" size={24} color={theme.colors.success} />
-          <Text style={styles.summaryTitle}>Ready to Create Batch</Text>
+          <Text style={styles.summaryTitle}>Sẵn sàng tạo lô</Text>
         </View>
 
         <Text style={styles.summaryDescription}>
-          Review your information and create your product batch. This will help track
-          your agricultural products and enable traceability for consumers.
+          Kiểm tra lại thông tin và tạo lô sản phẩm. Điều này giúp theo dõi sản phẩm và hỗ trợ truy xuất nguồn gốc cho người tiêu dùng.
         </Text>
 
         <View style={styles.summaryPoints}>
           <View style={styles.summaryPoint}>
             <Icon name="check" size={16} color={theme.colors.success} />
-            <Text style={styles.summaryPointText}>Product details verified</Text>
+            <Text style={styles.summaryPointText}>Thông tin sản phẩm đã xác minh</Text>
           </View>
           <View style={styles.summaryPoint}>
             <Icon name="check" size={16} color={theme.colors.success} />
-            <Text style={styles.summaryPointText}>Location coordinates set</Text>
+            <Text style={styles.summaryPointText}>Tọa độ vị trí đã thiết lập</Text>
           </View>
           <View style={styles.summaryPoint}>
             <Icon name="check" size={16} color={theme.colors.success} />
-            <Text style={styles.summaryPointText}>Images uploaded</Text>
+            <Text style={styles.summaryPointText}>Hình ảnh đã tải lên</Text>
           </View>
         </View>
       </View>
@@ -449,7 +448,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
             style={styles.previousButton}
             onPress={handlePreviousStep}>
             <Icon name="chevron-left" size={20} color={theme.colors.primary} />
-            <Text style={styles.previousButtonText}>Back</Text>
+            <Text style={styles.previousButtonText}>Quay lại</Text>
           </TouchableOpacity>
         )}
 
@@ -457,7 +456,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
           <TouchableOpacity
             style={styles.nextButton}
             onPress={handleNextStep}>
-            <Text style={styles.nextButtonText}>Next</Text>
+            <Text style={styles.nextButtonText}>Tiếp tục</Text>
             <Icon name="chevron-right" size={20} color={theme.colors.white} />
           </TouchableOpacity>
         ) : (
@@ -465,7 +464,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
             style={styles.createButton}
             onPress={handleCreateBatch}>
             <Icon name="check" size={20} color={theme.colors.white} />
-            <Text style={styles.createButtonText}>Create Batch</Text>
+            <Text style={styles.createButtonText}>Tạo lô</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -479,7 +478,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
         style={styles.backgroundGradient}>
 
         <Header
-          title="Create New Batch"
+          title="Tạo lô mới"
           style={styles.header}
           onBack={() => navigation.goBack()}
         />
@@ -501,7 +500,7 @@ const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => 
 
         {renderNavigationButtons()}
 
-        <LoadingOverlay visible={loading} message="Creating batch..." />
+        <LoadingOverlay visible={loading} message="Đang tạo lô..." />
       </LinearGradient>
     </SafeAreaView>
   );
