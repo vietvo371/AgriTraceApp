@@ -45,11 +45,7 @@ interface BatchDetailsResponse {
       longitude: number;
       address: string;
     };
-    images: {
-      farm: string | null;
-      product: string | null;
-      farmer?: string | null;
-    };
+    images: any;
     traceability: {
       batch_code: string;
       packaging_date: string;
@@ -64,6 +60,7 @@ interface BatchDetailsResponse {
       name: string;
       phone: string;
       email: string;
+      profile_image: string;
     };
     certification: {
       number: string;
@@ -187,56 +184,60 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
             />
           </View>
           <View style={styles.batchInfoContainer}>
-            <Text style={styles.batchCode}>Batch Code: {batch.traceability.batch_code}</Text>
+            <Text style={styles.batchCode}>Batch Code: {batch.traceability?.batch_code || 'N/A'}</Text>
           </View>
         </View>
 
         {/* Quick Stats */}
-        <View style={styles.statsGrid}>
-          <View style={[styles.statsCard, styles.elevation]}>
-            <Icon name="qrcode-scan" size={24} color={theme.colors.primary} />
-            <Text style={styles.statsValue}>{batch.stats.total_scans}</Text>
-            <Text style={styles.statsLabel}>Total Scans</Text>
+        {batch.stats && (
+          <View style={styles.statsGrid}>
+            <View style={[styles.statsCard, styles.elevation]}>
+              <Icon name="qrcode-scan" size={24} color={theme.colors.primary} />
+              <Text style={styles.statsValue}>{batch.stats.total_scans || 0}</Text>
+              <Text style={styles.statsLabel}>Total Scans</Text>
+            </View>
+            <View style={[styles.statsCard, styles.elevation]}>
+              <Icon name="account-group" size={24} color={theme.colors.secondary} />
+              <Text style={styles.statsValue}>{batch.stats.unique_customers || 0}</Text>
+              <Text style={styles.statsLabel}>Customers</Text>
+            </View>
+            <View style={[styles.statsCard, styles.elevation]}>
+              <Icon name="star" size={24} color={theme.colors.warning} />
+              <Text style={styles.statsValue}>{batch.stats.average_rating || 0}</Text>
+              <Text style={styles.statsLabel}>Rating</Text>
+            </View>
           </View>
-          <View style={[styles.statsCard, styles.elevation]}>
-            <Icon name="account-group" size={24} color={theme.colors.secondary} />
-            <Text style={styles.statsValue}>{batch.stats.unique_customers}</Text>
-            <Text style={styles.statsLabel}>Customers</Text>
-          </View>
-          <View style={[styles.statsCard, styles.elevation]}>
-            <Icon name="star" size={24} color={theme.colors.warning} />
-            <Text style={styles.statsValue}>{batch.stats.average_rating}</Text>
-            <Text style={styles.statsLabel}>Rating</Text>
-          </View>
-        </View>
+        )}
 
         {/* Traceability Information */}
-        <View style={[styles.section, styles.elevation]}>
-          <View style={styles.sectionHeader}>
-            <Icon name="timeline-text" size={24} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>Traceability Information</Text>
+        {batch.traceability && (
+          <View style={[styles.section, styles.elevation]}>
+            <View style={styles.sectionHeader}>
+              <Icon name="timeline-text" size={24} color={theme.colors.primary} />
+              <Text style={styles.sectionTitle}>Traceability Information</Text>
+            </View>
+            <View style={styles.timelineContainer}>
+              {batch.traceability.packaging_date && renderCertificationItem(
+                'calendar-check',
+                'Packaging Date',
+                convertDateToISOString(new Date(batch.traceability.packaging_date)),
+                theme.colors.primary
+              )}
+              {batch.traceability.best_before && renderCertificationItem(
+                'calendar-clock',
+                'Best Before',
+                convertDateToISOString(new Date(batch.traceability.best_before)),
+                theme.colors.warning
+              )}
+              {batch.certification?.number && renderCertificationItem(
+                'certificate',
+                'VietGAP Certification',
+                `${batch.certification.number} (Valid until ${batch.certification.validUntil || 'N/A'})`,
+                theme.colors.success
+              )}
+            </View>
           </View>
-          <View style={styles.timelineContainer}>
-            {renderCertificationItem(
-              'calendar-check',
-              'Packaging Date',
-              convertDateToISOString(new Date(batch.traceability.packaging_date)),
-              theme.colors.primary
-            )}
-            {renderCertificationItem(
-              'calendar-clock',
-              'Best Before',
-              convertDateToISOString(new Date(batch.traceability.best_before)),
-              theme.colors.warning
-            )}
-            {renderCertificationItem(
-              'certificate',
-              'VietGAP Certification',
-              `${batch.certification.number} (Valid until ${batch.certification.validUntil})`,
-              theme.colors.success
-            )}
-          </View>
-        </View>
+        )}
 
         {/* Product Information */}
         <View style={[styles.section, styles.elevation]}>
@@ -245,113 +246,161 @@ const BatchDetailScreen: React.FC<BatchDetailScreenProps> = ({
             <Text style={styles.sectionTitle}>Product Information</Text>
           </View>
           <View style={styles.infoGrid}>
-            {renderInfoItem('weight-kilogram', 'Weight', `${batch.weight} kg`, theme.colors.primary)}
-            {renderInfoItem('leaf', 'Method', batch.cultivation_method, theme.colors.secondary)}
-            {renderInfoItem('calendar-blank', 'Planted', convertDateToISOString(new Date(batch.planting_date)), theme.colors.accent)}
-            {renderInfoItem('calendar-check', 'Harvested', convertDateToISOString(new Date(batch.harvest_date)), theme.colors.success)}
+            {renderInfoItem('weight-kilogram', 'Weight', `${batch.weight || 0} kg`, theme.colors.primary)}
+            {renderInfoItem('leaf', 'Method', batch.cultivation_method || 'N/A', theme.colors.secondary)}
+            {renderInfoItem('calendar-blank', 'Planted', batch.planting_date ? convertDateToISOString(new Date(batch.planting_date)) : 'N/A', theme.colors.accent)}
+            {renderInfoItem('calendar-check', 'Harvested', batch.harvest_date ? convertDateToISOString(new Date(batch.harvest_date)) : 'N/A', theme.colors.success)}
           </View>
         </View>
 
         {/* Sustainability Metrics */}
-        <View style={[styles.section, styles.elevation]}>
-          <View style={styles.sectionHeader}>
-            <Icon name="leaf-circle" size={24} color={theme.colors.success} />
-            <Text style={styles.sectionTitle}>Sustainability Metrics</Text>
+        {batch.sustainability && (
+          <View style={[styles.section, styles.elevation]}>
+            <View style={styles.sectionHeader}>
+              <Icon name="leaf-circle" size={24} color={theme.colors.success} />
+              <Text style={styles.sectionTitle}>Sustainability Metrics</Text>
+            </View>
+            <View style={styles.sustainabilityGrid}>
+              {batch.sustainability.water_usage && renderCertificationItem(
+                'water',
+                'Water Usage',
+                batch.sustainability.water_usage,
+                theme.colors.primary
+              )}
+              {batch.sustainability.carbon_footprint && renderCertificationItem(
+                'molecule-co2',
+                'Carbon Footprint',
+                batch.sustainability.carbon_footprint,
+                theme.colors.secondary
+              )}
+              {batch.sustainability.pesticide_usage && renderCertificationItem(
+                'flask',
+                'Pesticide Usage',
+                batch.sustainability.pesticide_usage,
+                theme.colors.success
+              )}
+            </View>
           </View>
-          <View style={styles.sustainabilityGrid}>
-            {renderCertificationItem(
-              'water',
-              'Water Usage',
-              batch.sustainability.water_usage,
-              theme.colors.primary
-            )}
-            {renderCertificationItem(
-              'molecule-co2',
-              'Carbon Footprint',
-              batch.sustainability.carbon_footprint,
-              theme.colors.secondary
-            )}
-            {renderCertificationItem(
-              'flask',
-              'Pesticide Usage',
-              batch.sustainability.pesticide_usage,
-              theme.colors.success
-            )}
-          </View>
-        </View>
+        )}
+         {/* Photo Batch */}
+         {batch.images && (
+           <View style={[styles.section, styles.elevation]}>
+             <View style={styles.sectionHeader}>
+               <Icon name="image" size={24} color={theme.colors.primary} />
+               <Text style={styles.sectionTitle}>Batch Photos</Text>
+             </View>
+             <View style={styles.imagesContainer}>
+               {batch.images.product && (
+                 <View style={styles.imageItem}>
+                   <Text style={styles.imageLabel}>Product</Text>
+                   <Image
+                     source={{ uri: batch.images.product }}
+                     style={styles.image}
+                     resizeMode="cover"
+                   />
+                 </View>
+               )}
+               {batch.images == null && (
+                 <View style={styles.imageItem}>
+                   <Text style={styles.imageLabel}>No photos</Text>
+                   <Image
+                     source={require('../assets/images/avatar.jpeg')}
+                     style={styles.image}
+                     resizeMode="cover"
+                   />
+                 </View>
+               )}
+               
+             </View>
+           </View>
+         )}
+         
 
         {/* Farm Location */}
-        <View style={[styles.section, styles.elevation]}>
-          <View style={styles.sectionHeader}>
-            <Icon name="map-marker" size={24} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>Farm Location</Text>
-          </View>
-          <View style={styles.mapContainer}>
-            <View style={styles.addressContainer}>
-              <Icon name="home-variant" size={20} color={theme.colors.primary} />
-              <Text style={styles.address}>{batch.location.address}</Text>
+        {batch.location && (
+          <View style={[styles.section, styles.elevation]}>
+            <View style={styles.sectionHeader}>
+              <Icon name="map-marker" size={24} color={theme.colors.primary} />
+              <Text style={styles.sectionTitle}>Farm Location</Text>
             </View>
-            <MapView
-              style={styles.map}
-              initialRegion={{
-                latitude: batch.location.latitude,
-                longitude: batch.location.longitude,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
-              }}>
-              <Marker
-                coordinate={{
-                  latitude: batch.location.latitude,
-                  longitude: batch.location.longitude,
-                }}
-              />
-            </MapView>
+            <View style={styles.mapContainer}>
+              <View style={styles.addressContainer}>
+                <Icon name="home-variant" size={20} color={theme.colors.primary} />
+                <Text style={styles.address}>{batch.location.address || 'Location not specified'}</Text>
+              </View>
+              {batch.location.latitude !== 0 && batch.location.longitude !== 0 ? (
+                <MapView
+                  style={styles.map}
+                  initialRegion={{
+                    latitude: batch.location.latitude,
+                    longitude: batch.location.longitude,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                  }}>
+                  <Marker
+                    coordinate={{
+                      latitude: batch.location.latitude,
+                      longitude: batch.location.longitude,
+                    }}
+                  />
+                </MapView>
+              ) : (
+                <View style={styles.mapPlaceholder}>
+                  <Icon name="map-marker-off" size={48} color={theme.colors.textLight} />
+                  <Text style={styles.mapPlaceholderText}>Location coordinates not available</Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Farmer Information */}
-        <View style={[styles.section, styles.elevation]}>
-          <View style={styles.sectionHeader}>
-            <Icon name="account" size={24} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>Farmer Information</Text>
-          </View>
-          <View style={styles.farmerCard}>
-            <Image
-              source={batch.images.farmer ? { uri: batch.images.farmer } : require('../assets/images/avatar.jpeg')}
-              style={styles.farmerImage}
-            />
-            <View style={styles.farmerDetails}>
-              <Text style={styles.farmerName}>{batch.farmer.name}</Text>
-              <View style={styles.contactItem}>
-                <Icon name="phone" size={16} color={theme.colors.primary} />
-                <Text style={styles.farmerContact}>{batch.farmer.phone}</Text>
-              </View>
-              <View style={styles.contactItem}>
-                <Icon name="email" size={16} color={theme.colors.primary} />
-                <Text style={styles.farmerContact}>{batch.farmer.email}</Text>
+        {batch.farmer && (
+          <View style={[styles.section, styles.elevation]}>
+            <View style={styles.sectionHeader}>
+              <Icon name="account" size={24} color={theme.colors.primary} />
+              <Text style={styles.sectionTitle}>Farmer Information</Text>
+            </View>
+            <View style={styles.farmerCard}>
+              <Image
+                source={{uri: batch.farmer.profile_image}}
+                style={styles.farmerImage}
+              />
+              <View style={styles.farmerDetails}>
+                <Text style={styles.farmerName}>{batch.farmer.name || 'N/A'}</Text>
+                <View style={styles.contactItem}>
+                  <Icon name="phone" size={16} color={theme.colors.primary} />
+                  <Text style={styles.farmerContact}>{batch.farmer.phone || 'N/A'}</Text>
+                </View>
+                <View style={styles.contactItem}>
+                  <Icon name="email" size={16} color={theme.colors.primary} />
+                  <Text style={styles.farmerContact}>{batch.farmer.email || 'N/A'}</Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
+        )}
 
         {/* Reviews */}
-        <View style={[styles.section, styles.elevation]}>
-          <View style={styles.sectionHeader}>
-            <Icon name="comment-text" size={24} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>Customer Reviews</Text>
+        {batch.reviews && batch.reviews.length > 0 && (
+          <View style={[styles.section, styles.elevation]}>
+            <View style={styles.sectionHeader}>
+              <Icon name="comment-text" size={24} color={theme.colors.primary} />
+              <Text style={styles.sectionTitle}>Customer Reviews</Text>
+            </View>
+            <View style={styles.reviewsContainer}>
+              {batch.reviews.map((review: BatchDetailsResponse['data']['reviews'][0]) => (
+                <ReviewCard
+                  key={review.id}
+                  reviewer={review.reviewer}
+                  rating={review.rating}
+                  comment={review.comment}
+                  date={review.date}
+                />
+              ))}
+            </View>
           </View>
-          <View style={styles.reviewsContainer}>
-            {batch.reviews.map((review: BatchDetailsResponse['data']['reviews'][0]) => (
-              <ReviewCard
-                key={review.id}
-                reviewer={review.reviewer}
-                rating={review.rating}
-                comment={review.comment}
-                date={review.date}
-              />
-            ))}
-          </View>
-        </View>
+        )}
 
         {/* Actions */}
         <View style={styles.actions}>
@@ -572,6 +621,20 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 12,
   },
+  mapPlaceholder: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    backgroundColor: theme.colors.border + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  mapPlaceholderText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textLight,
+    textAlign: 'center',
+  },
   farmerCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -613,6 +676,23 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     borderRadius: 12,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+  },
+  imagesContainer: {
+    gap: 16,
+  },
+  imageItem: {
+    marginBottom: 16,
+  },
+  imageLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.textLight,
+    marginBottom: 8,
   },
 });
 

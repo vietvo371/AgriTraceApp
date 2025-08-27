@@ -21,17 +21,22 @@ interface BatchCardProps {
     harvest_date: string;
     cultivation_method: string;
     image?: string;
-    status: 'active' | 'expired';
-    customer_id: string;
-    product_id: string;
-    batch_code: string;
-    variety: string;
-    planting_date: string;
-    customer: any;
-    product: any;
-    reviews: any;
+    status: 'active' | 'completed' | 'cancelled';
+    customer_id?: string;
+    product_id?: string;
+    batch_code?: string;
+    variety?: string;
+    planting_date?: string;
+    customer?: any;
+    product?: any;
+    reviews?: any;
     images: any;
-    access_logs: any;
+    access_logs?: any;
+    stats?: {
+      total_scans: number;
+      unique_customers: number;
+      average_rating: number;
+    };
   };
   onPress?: () => void;
   style?: ViewStyle;
@@ -42,30 +47,44 @@ const BatchCard: React.FC<BatchCardProps> = ({
   onPress,
   style,
 }) => {
-  const convertDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+
+  const convertDate = (date: string | undefined) => {
+    if (!date) return 'N/A';
+    try {
+      return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch (error) {
+      return 'Invalid Date';
+    }
   };
   const getStatusVariant = () => {
-    return batch.status === 'active' ? 'success' : 'error';
+    if (batch.status === 'active') return 'success';
+    if (batch.status === 'completed') return 'success';
+    if (batch.status === 'cancelled') return 'error';
+    return 'default';
   };
 
   const getStatusText = () => {
-    return batch.status === 'active' ? 'Active' : 'Expired';
+    if (batch.status === 'active') return 'Active';
+    if (batch.status === 'completed') return 'Completed';
+    if (batch.status === 'cancelled') return 'Cancelled';
+    return 'Unknown';
   };
+
+  console.log(batch.images.product);
 
   return (
     <TouchableOpacity
       style={[styles.container, style]}
       onPress={onPress}
       activeOpacity={0.8}>
-      <View style={styles.imageContainer}>
-        {batch.images && batch.images.length > 0 && batch.images.find((image: any) => image.image_type === "product") ? (
+       <View style={styles.imageContainer}>
+        {batch.images && batch.images.length > 0 ? (
           <Image
-            source={{ uri: batch.images.find((image: any) => image.image_type === "product").image_url }}
+            source={{ uri: batch.images.find((image: any) => image.image_type === "product")?.image_url || batch.images?.product }}
             style={styles.image}
             resizeMode="cover"
           />
@@ -78,10 +97,10 @@ const BatchCard: React.FC<BatchCardProps> = ({
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={styles.productName} numberOfLines={1}>{batch.product?.name || batch.product_name}</Text>
+            <Text style={styles.productName} numberOfLines={1}>{batch.product?.name || batch.product_name || 'Unnamed Product'}</Text>
             <View style={styles.categoryContainer}>
               <Icon name="tag-outline" size={14} color={theme.colors.textLight} />
-              <Text style={styles.category}>{batch.product?.category?.name || batch.category}</Text>
+              <Text style={styles.category}>{batch.product?.category?.name || batch.category || 'Uncategorized'}</Text>
             </View>
           </View>
           {/* <Badge
@@ -93,15 +112,15 @@ const BatchCard: React.FC<BatchCardProps> = ({
         <View style={styles.details}>
           <View style={styles.detailItem}>
             <Icon name="weight-kilogram" size={16} color={theme.colors.primary} />
-            <Text style={styles.detailText}>{batch.weight} kg</Text>
+            <Text style={styles.detailText}>{batch.weight || 0} kg</Text>
           </View>
           <View style={styles.detailItem}>
             <Icon name="calendar-outline" size={16} color={theme.colors.secondary} />
-            <Text style={styles.detailText}>{convertDate(batch.harvest_date || batch.harvest_date)}</Text>
+            <Text style={styles.detailText}>{convertDate(batch.harvest_date)}</Text>
           </View>
           <View style={styles.detailItem}>
             <Icon name="leaf" size={16} color={theme.colors.accent} />
-            <Text style={styles.detailText}>{batch.cultivation_method || batch.cultivation_method}</Text>
+            <Text style={styles.detailText}>{batch.cultivation_method || 'N/A'}</Text>
           </View>
         </View>
       </View>

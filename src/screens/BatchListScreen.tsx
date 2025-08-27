@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
@@ -39,14 +40,17 @@ interface BatchListResponse {
       harvest_date: string;
       cultivation_method: string;
       status: 'active' | 'completed' | 'cancelled';
-      stats: {
+      stats?: {
         total_scans: number;
         unique_customers: number;
         average_rating: number;
       };
-      images: {
-        product: string | null;
-      };
+      images?: {
+        product?: string | null;
+      } | Array<{
+        image_type: string;
+        image_url: string;
+      }> | null;
     }>;
     pagination: {
       total: number;
@@ -58,7 +62,6 @@ interface BatchListResponse {
   message: string;
 }
 
-
 const statusOptions = [
   { label: 'All', value: 'all' },
   { label: 'Active', value: 'active' },
@@ -66,9 +69,9 @@ const statusOptions = [
   { label: 'Cancelled', value: 'cancelled' },
 ];
 
-
 const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
@@ -81,6 +84,7 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
     total_pages: 0
   });
   const [sortOptions, setSortOptions] = useState<any[]>([]);
+
   const fetchSortOptions = async () => {
     try {
       const response = await api.get<any>('/categories/all-public');
@@ -98,8 +102,13 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
     fetchSortOptions();
   }, []);
 
-  const fetchBatches = async (page = currentPage) => {
-    setLoading(true);
+  const fetchBatches = async (page = currentPage, isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
       const response = await api.get<BatchListResponse>('/batches/all-farmer', {
         params: {
@@ -110,14 +119,51 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
           sort: sortOrder
         }
       });
-      console.log(response.data);
-      setBatches(response.data.data.items);
+      console.log('Batches response:', response.data);
+      
+      // Validate response structure
+      if (!response.data?.data?.items || !Array.isArray(response.data.data.items)) {
+        console.error('Invalid response structure:', response.data);
+        setBatches([]);
+        return;
+      }
+      
+      // Ensure images property exists for each batch and handle different data structures
+      const batchesWithImages = response.data.data.items.map((batch: any) => {
+        // Handle different possible image structures
+        let images: { product: string | null } = { product: null };
+        
+        if (batch.images) {
+          if (typeof batch.images === 'object' && batch.images !== null) {
+            if (batch.images.product) {
+              images = { product: batch.images.product };
+            } else if (Array.isArray(batch.images)) {
+              // If images is an array, try to find product image
+              const productImage = batch.images.find((img: any) => img.image_type === 'product');
+              images = { product: productImage?.image_url || null };
+            }
+          }
+        }
+        
+        return {
+          ...batch,
+          images
+        };
+      });
+      
+      if (page === 1) {
+        setBatches(batchesWithImages as any);
+      } else {
+        setBatches(prev => [...prev, ...batchesWithImages] as any);
+      }
+      
       setPagination(response.data.data.pagination);
     } catch (error: any) {
       console.error('Error fetching batches:', error.response);
       // TODO: Show error message
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -137,6 +183,11 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
 
   const handleBatchPress = (batchId: string) => {
     navigation.navigate('BatchDetail', { batchId });
+  };
+
+  const onRefresh = () => {
+    setCurrentPage(1);
+    fetchBatches(1, true);
   };
 
   const renderHeader = () => (
@@ -186,7 +237,6 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
           {pagination.total} {pagination.total === 1 ? 'batch' : 'batches'} found
         </Text>
       </View>
-
     </View>
   );
 
@@ -213,6 +263,14 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
     </View>
   );
 
+  const renderBatchItem = ({ item }: { item: any }) => (
+    <BatchCard
+    key={item.id}
+    batch={item}
+    onPress={() => handleBatchPress(item.id)}
+  />
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
@@ -221,12 +279,7 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
       />
       <FlatList
         data={batches}
-        renderItem={({ item }) => (
-          <BatchCard
-            batch={item as any}
-            onPress={() => handleBatchPress(item.id)}
-          />
-        )}
+        renderItem={renderBatchItem}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={renderHeader}
@@ -234,11 +287,14 @@ const BatchListScreen: React.FC<BatchListScreenProps> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
-        refreshing={loading && currentPage === 1}
-        onRefresh={() => {
-          setCurrentPage(1);
-          fetchBatches(1);
-        }}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
       />
       <LoadingOverlay visible={loading} />
     </SafeAreaView>
@@ -255,7 +311,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   filtersContainer: {
-    // marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -290,7 +346,7 @@ const styles = StyleSheet.create({
   filterRow: {
     flexDirection: 'row',
     gap: 12,
-    // marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   filterItem: {
     flex: 1,

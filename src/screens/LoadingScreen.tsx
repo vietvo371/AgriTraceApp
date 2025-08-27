@@ -31,7 +31,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/images/logo.jpg')}
+        source={require('../assets/images/logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />

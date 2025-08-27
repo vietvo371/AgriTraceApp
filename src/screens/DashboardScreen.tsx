@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Platform,
   RefreshControl,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { theme } from '../theme/colors';
@@ -16,6 +17,9 @@ import StatsCard from '../component/StatsCard';
 import BatchCard from '../component/BatchCard';
 import { dashboardApi, UserProfile, DashboardStats, Batch } from '../utils/Api';
 import LoadingOverlay from '../component/LoadingOverlay';
+import LinearGradient from 'react-native-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 interface DashboardScreenProps {
   navigation: any;
@@ -37,19 +41,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         dashboardApi.getUserProfile(),
         dashboardApi.getDashboardStats(),
         dashboardApi.getRecentBatches(),
-        // dashboardApi.getUnreadNotificationCount(),
       ]);
+
+      // Ensure images property exists for each batch
+      const batchesWithImages = batches.map((batch: any) => ({
+        ...batch,
+        images: batch.images || { product: null }
+      }));
 
       setUserProfile(profile);
       setDashboardStats(stats);
-      setRecentBatches(batches);
-      console.log(batches);
-      console.log(stats);
-      console.log(profile);
-      // setUnreadNotifications(notifications);
+      setRecentBatches(batchesWithImages as any);
     } catch (error) {
       console.log('Error loading dashboard data:', error);
-      // Thêm xử lý lỗi ở đây (ví dụ: hiển thị thông báo lỗi)
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -64,6 +68,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   useEffect(() => {
     loadDashboardData();
   }, []);
+
   const handleCreateBatch = () => {
     navigation.navigate('CreateBatch');
   };
@@ -88,119 +93,189 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
         }>
+        
         {/* Header Section */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleViewProfile} style={styles.userSection}>
-            <Image 
-              source={userProfile?.profile_image ? { uri: userProfile.profile_image } : defaultProfileImage} 
-              style={styles.avatar} 
-            />
-            <View style={styles.userInfo}>
-              <Text style={styles.userName}>{userProfile?.full_name || 'Loading...'}</Text>
-              <View style={styles.farmInfo}>
-                <Icon name="home-variant" size={16} color={theme.colors.primary} />
-                <Text style={styles.farmName}>{userProfile?.farm_name || 'farm...'}</Text>
-              </View>
+        <View style={styles.headerContainer}>
+          <LinearGradient
+            colors={['#4CAF50', '#45A049', '#388E3C']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.headerGradient}>
+            
+            <View style={styles.headerTop}>
+              <TouchableOpacity onPress={handleViewProfile} style={styles.profileSection}>
+                <View style={styles.avatarWrapper}>
+                  <Image 
+                    source={userProfile?.profile_image ? { uri: userProfile.profile_image } : defaultProfileImage} 
+                    style={styles.avatar} 
+                  />
+                  <View style={styles.statusDot} />
+                </View>
+                <View style={styles.profileInfo}>
+                  <Text style={styles.welcomeText}>Welcome back,</Text>
+                  <Text style={styles.profileName}>{userProfile?.full_name || 'Loading...'}</Text>
+                  <View style={styles.locationRow}>
+                    <Icon name="map-marker" size={12} color="rgba(255,255,255,0.8)" />
+                    <Text style={styles.locationText}>{userProfile?.farm_name || 'Loading...'}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                onPress={() => navigation.navigate('Notifications')} 
+                style={styles.notificationBtn}>
+                <Icon name="bell-outline" size={20} color="white" />
+                {unreadNotifications > 0 && (
+                  <View style={styles.notificationDot}>
+                    <Text style={styles.notificationCount}>{unreadNotifications}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.notificationButton}>
-            <Icon name="bell-outline" size={24} color={theme.colors.text} />
-            {unreadNotifications > 0 && <View style={styles.notificationBadge} />}
-          </TouchableOpacity>
+          </LinearGradient>
         </View>
 
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.primaryButton]} 
-            onPress={handleCreateBatch}>
-            <Icon name="plus-circle-outline" size={28} color={theme.colors.white} />
-            <Text style={styles.actionText}>New Batch</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.secondaryButton]} 
-            onPress={handleViewAllBatches}>
-            <Icon name="format-list-bulleted" size={28} color={theme.colors.white} />
-            <Text style={styles.actionText}>View All</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.accentButton]} 
-            onPress={() => navigation.navigate('QRGenerate', { batchId: '1' })}>
-            <Icon name="qrcode" size={28} color={theme.colors.white} />
-            <Text style={styles.actionText}>Generate QR</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Stats Section */}
-        <View style={styles.statsSection}>
-          <View style={styles.sectionHeaderContainer}>
-            <View>
-              <Text style={styles.sectionTitle}>Overview</Text>
-              <Text style={styles.sectionSubtitle}>Track your performance</Text>
+        {/* Main Content */}
+        <View style={styles.mainContent}>
+          
+          {/* Quick Actions */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Quick Actions</Text>
+            <View style={styles.actionsGrid}>
+              <TouchableOpacity 
+                style={[styles.actionCard, styles.primaryAction]} 
+                onPress={handleCreateBatch}>
+                <View style={styles.actionIconContainer}>
+                  <Icon name="plus" size={28} color="white" />
+                </View>
+                <Text style={styles.actionLabel}>New Batch</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.actionCard, styles.secondaryAction]} 
+                onPress={handleViewAllBatches}>
+                <View style={styles.actionIconContainer}>
+                  <Icon name="format-list-bulleted" size={28} color="white" />
+                </View>
+                <Text style={styles.actionLabel}>View All</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.actionCard, styles.accentAction]} >
+                <View style={styles.actionIconContainer}>
+                  <Icon name="qrcode" size={28} color="white" />
+                </View>
+                <Text style={styles.actionLabel}>QR Code</Text>
+              </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.statsContainer}>
-            {dashboardStats && (
-              <>
-                <StatsCard
-                  title="Total Batches"
-                  subtitle="Active batches"
-                  value={dashboardStats.batches.total.toString()}
-                  icon="cube-outline"
-                  iconColor={theme.colors.primary}
-                  trend={dashboardStats.batches.trend}
-                  style={styles.statsCard}
-                />
-                <StatsCard
-                  title="QR Scans"
-                  subtitle="Last 30 days"
-                  value={dashboardStats.qr_scans.total.toString()}
-                  icon="qrcode-scan"
-                  iconColor={theme.colors.secondary}
-                  trend={dashboardStats.qr_scans.trend}
-                  style={styles.statsCard}
-                />
-                <StatsCard
-                  title="Products"
-                  subtitle="Types registered"
-                  value={dashboardStats.products.total.toString()}
-                  icon="sprout-outline"
-                  iconColor={theme.colors.accent}
-                  trend={dashboardStats.products.trend}
-                  style={styles.statsCard}
-                />
-              </>
-            )}
-          </View>
-        </View>
 
-        {/* Recent Batches */}
-        <View style={styles.recentBatchesSection}>
-          <View style={styles.sectionHeaderContainer}>
-            <View>
+          {/* Performance Overview */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Performance Overview</Text>
+              <TouchableOpacity style={styles.filterButton}>
+                <Text style={styles.filterText}>This Month</Text>
+                <Icon name="chevron-down" size={16} color={theme.colors.primary} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.performanceGrid}>
+              {dashboardStats && (
+                <>
+                  <View style={styles.performanceCard}>
+                    <View style={styles.performanceHeader}>
+                      <View style={[styles.performanceIcon, { backgroundColor: '#E8F5E8' }]}>
+                        <Icon name="cube-outline" size={20} color={theme.colors.primary} />
+                      </View>
+                      <View style={styles.trendBadge}>
+                        <Icon name="trending-up" size={12} color="#4CAF50" />
+                        <Text style={styles.trendText}>+{dashboardStats.batches.trend.value}%</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.performanceValue}>{dashboardStats.batches.total}</Text>
+                    <Text style={styles.performanceLabel}>Total Batches</Text>
+                    <Text style={styles.performanceSubtext}>Active tracking</Text>
+                  </View>
+
+                  <View style={styles.performanceCard}>
+                    <View style={styles.performanceHeader}>
+                      <View style={[styles.performanceIcon, { backgroundColor: '#E3F2FD' }]}>
+                        <Icon name="qrcode-scan" size={20} color="#2196F3" />
+                      </View>
+                      <View style={styles.trendBadge}>
+                        <Icon name="trending-up" size={12} color="#4CAF50" />
+                        <Text style={styles.trendText}>+{dashboardStats.qr_scans.trend.value}%</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.performanceValue}>{dashboardStats.qr_scans.total}</Text>
+                    <Text style={styles.performanceLabel}>QR Scans</Text>
+                    <Text style={styles.performanceSubtext}>Last 30 days</Text>
+                  </View>
+
+                  <View style={styles.performanceCardFull}>
+                    <View style={styles.performanceHeader}>
+                      <View style={[styles.performanceIcon, { backgroundColor: '#FFF3E0' }]}>
+                        <Icon name="sprout" size={20} color="#FF9800" />
+                      </View>
+                      <View style={styles.trendBadge}>
+                        <Icon name="trending-up" size={12} color="#4CAF50" />
+                        <Text style={styles.trendText}>+{dashboardStats.products.trend.value}%</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.performanceValue}>{dashboardStats.products.total}</Text>
+                    <Text style={styles.performanceLabel}>Product Types</Text>
+                    <Text style={styles.performanceSubtext}>Registered in system</Text>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+
+          {/* Recent Batches */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Recent Batches</Text>
+              <TouchableOpacity 
+                onPress={handleViewAllBatches} 
+                style={styles.viewAllBtn}>
+                <Text style={styles.viewAllText}>View All</Text>
+                <Icon name="arrow-right" size={16} color={theme.colors.primary} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity 
-              onPress={handleViewAllBatches} 
-              style={styles.viewAllButton}
-            >
-              <Text style={styles.viewAllText}>View All</Text>
-              <Icon name="chevron-right" size={20} color={theme.colors.primary} />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.batchesContainer}>
-            {recentBatches.map(batch => (
-              <BatchCard
-                key={batch.id}
-                batch={batch}
-                onPress={() => handleBatchPress(batch.id)}
-              />
-            ))}
-            {recentBatches.length === 0 && (
-              <Text style={styles.emptyText}>No recent batches found</Text>
+            
+            {recentBatches.length > 0 ? (
+              <View style={styles.batchesList}>
+                {recentBatches.map(batch => (
+                  <BatchCard
+                    key={batch.id}
+                    batch={batch}
+                    onPress={() => handleBatchPress(batch.id)}
+                  />
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <View style={styles.emptyIconContainer}>
+                  <Icon name="package-variant" size={40} color="#E0E0E0" />
+                </View>
+                <Text style={styles.emptyTitle}>No Recent Batches</Text>
+                <Text style={styles.emptySubtitle}>Create your first batch to start tracking</Text>
+                <TouchableOpacity 
+                  style={styles.emptyButton}
+                  onPress={handleCreateBatch}>
+                  <Text style={styles.emptyButtonText}>Create First Batch</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
         </View>
@@ -212,98 +287,174 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F8F9FA',
   },
   scrollContent: {
-    padding: theme.spacing.lg,
+    paddingBottom: 20,
   },
-  header: {
+  headerContainer: {
+    marginBottom: 20,
+  },
+  headerGradient: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 30,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerTop: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    marginBottom: theme.spacing.xl,
+    marginBottom: 25,
   },
-  userSection: {
+  profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+  },
+  avatarWrapper: {
+    position: 'relative',
+    marginRight: 15,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.white,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
-  userInfo: {
-    marginLeft: theme.spacing.md,
+  statusDot: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#4CAF50',
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  profileInfo: {
     flex: 1,
   },
-  userName: {
-    fontFamily: theme.typography.fontFamily.bold,
-    fontSize: theme.typography.fontSize.lg,
-    color: theme.colors.text,
+  welcomeText: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '400',
     marginBottom: 2,
   },
-  farmInfo: {
+  profileName: {
+    fontSize: 20,
+    color: 'white',
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  farmName: {
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.textLight,
+  locationText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.8)',
     marginLeft: 4,
+    fontWeight: '500',
   },
-  notificationButton: {
+  notificationBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.white,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    position: 'relative',
+    marginRight: 30,
   },
-  notificationBadge: {
+  notificationDot: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: theme.colors.error,
+    top: 6,
+    right: 6,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#FF5722',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  quickActions: {
+  notificationCount: {
+    fontSize: 10,
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  statsPreview: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 24,
+    color: 'white',
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    marginHorizontal: 10,
+  },
+  mainContent: {
+    paddingHorizontal: 20,
+  },
+  section: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 15,
+  },
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing.xl,
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
     alignItems: 'center',
+    marginBottom: 15,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E8',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  filterText: {
+    fontSize: 14,
+    color: theme.colors.primary,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  actionCard: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 20,
+    borderRadius: 16,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -316,129 +467,167 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  primaryButton: {
-    backgroundColor: theme.colors.primary,
+  primaryAction: {
+    backgroundColor: '#4CAF50',
   },
-  secondaryButton: {
-    backgroundColor: theme.colors.secondary,
+  secondaryAction: {
+    backgroundColor: '#2196F3',
   },
-  accentButton: {
-    backgroundColor: theme.colors.accent,
+  accentAction: {
+    backgroundColor: '#FF9800',
   },
-  actionText: {
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.white,
-    marginTop: 8,
+  actionIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  statsSection: {
-    marginBottom: theme.spacing.xl,
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
+  actionLabel: {
+    fontSize: 14,
+    color: 'white',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  performanceGrid: {
+    gap: 15,
+  },
+  performanceCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    flex: 0.48,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
     }),
   },
-  sectionHeaderContainer: {
+  performanceCardFull: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  performanceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: 15,
   },
-  sectionTitle: {
-    fontFamily: theme.typography.fontFamily.bold,
-    fontSize: theme.typography.fontSize.lg,
-    color: theme.colors.text,
+  performanceIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trendBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E8',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  trendText: {
+    fontSize: 12,
+    color: '#4CAF50',
+    fontWeight: '600',
+    marginLeft: 2,
+  },
+  performanceValue: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1A1A1A',
     marginBottom: 4,
   },
-  sectionSubtitle: {
-    fontFamily: theme.typography.fontFamily.regular,
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.textLight,
+  performanceLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 2,
   },
-  periodSelector: {
+  performanceSubtext: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '400',
+  },
+  viewAllBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary + '10',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
-    gap: 6,
-  },
-  periodText: {
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.primary,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  statsCard: {
-    flex: 1,
-    minWidth: '30%',
-    backgroundColor: theme.colors.background,
-  },
-  recentBatches: {
-    marginBottom: theme.spacing.xl,
-  },
-  recentBatchesSection: {
-    marginBottom: theme.spacing.xl,
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  batchesContainer: {
-    gap: 12,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  viewAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary + '10',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
+    backgroundColor: '#E8F5E8',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   viewAllText: {
-    fontFamily: theme.typography.fontFamily.medium,
-    fontSize: theme.typography.fontSize.sm,
+    fontSize: 14,
     color: theme.colors.primary,
+    fontWeight: '600',
     marginRight: 4,
   },
-  emptyText: {
-    fontFamily: theme.typography.fontFamily.regular,
-    fontSize: theme.typography.fontSize.md,
-    color: theme.colors.textLight,
+  batchesList: {
+    gap: 12,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginTop: 10,
+  },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#666',
     textAlign: 'center',
-    marginVertical: theme.spacing.xl,
+    marginBottom: 20,
+  },
+  emptyButton: {
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  emptyButtonText: {
+    fontSize: 14,
+    color: 'white',
+    fontWeight: '600',
   },
 });
 
-export default DashboardScreen; 
+export default DashboardScreen;

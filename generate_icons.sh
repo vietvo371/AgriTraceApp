@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Đường dẫn đến ảnh gốc (thay thế path_to_original_image.png bằng đường dẫn thật)
-ORIGINAL_IMAGE="src/assets/images/logo.jpg"
+ORIGINAL_IMAGE="src/assets/images/logo.png"
 OUTPUT_DIR="ios/AgriTrace/Images.xcassets/AppIcon.appiconset"
 
 # Tạo các icon với kích thước khác nhau

@@ -22,8 +22,11 @@ interface Location {
 }
 
 interface LocationPickerProps {
-  value?: Location;
-  onChange: (location: Location) => void;
+  value?: {
+    location: string; // City, Country
+    gps_coordinates: string; // "lat,long" format
+  };
+  onChange: (data: { location: string; gps_coordinates: string }) => void;
   label?: string;
   error?: string;
   required?: boolean;
@@ -44,8 +47,25 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   const mapRef = useRef<MapView>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(value || null);
-  const [mapReady, setMapReady] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [locationText, setLocationText] = useState<string>('');
+  const [gpsCoordinates, setGpsCoordinates] = useState<string>('');
+
+  // Initialize with existing value
+  useEffect(() => {
+    if (value) {
+      setLocationText(value.location || '');
+      setGpsCoordinates(value.gps_coordinates || '');
+      
+      // Parse GPS coordinates if they exist
+      if (value.gps_coordinates) {
+        const [lat, lng] = value.gps_coordinates.split(',').map(Number);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          setSelectedLocation({ latitude: lat, longitude: lng });
+        }
+      }
+    }
+  }, [value]);
 
   const requestLocationPermission = async () => {
     try {
@@ -105,8 +125,18 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           };
           setCurrentLocation(location);
           setSelectedLocation(location);
-          onChange(location);
+          
+          // Update GPS coordinates
+          const coords = `${location.latitude.toFixed(6)},${location.longitude.toFixed(6)}`;
+          setGpsCoordinates(coords);
+          
+          // Fetch address and update location text
+          fetchAddress(location.latitude, location.longitude);
           animateToLocation(location);
+          
+          // Update parent component
+          updateParentData(locationText, coords);
+          
           console.log('Current location:', location);
         },
         error => {
@@ -134,20 +164,88 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     return `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
   };
 
+  const fetchAddress = async (lat: number, lon: number) => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+      const res = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'AgriTraceApp/1.0'
+        }
+      });
+      const data = await res.json();
+      
+      // Extract city and country from address
+      const address = data?.address;
+      let city = '';
+      let country = '';
+      
+      if (address) {
+        // Try to get city from various possible fields
+        city = address.city || address.town || address.village || address.county || address.state || '';
+        country = address.country || '';
+      }
+      
+      // Format location text
+      let locationString = '';
+      if (city && country) {
+        locationString = `${city}, ${country}`;
+      } else if (city) {
+        locationString = city;
+      } else if (country) {
+        locationString = country;
+      } else {
+        // Fallback to display_name if address parsing fails
+        locationString = data?.display_name?.split(',').slice(0, 2).join(',') || '';
+      }
+      
+      setLocationText(locationString);
+      console.log('Parsed address:', { city, country, locationString });
+    } catch (e) {
+      console.error('Error fetching address:', e);
+      setLocationText('');
+    }
+  };
+
   const handleMapPress = (e: any) => {
     const location = e.nativeEvent.coordinate;
     setSelectedLocation(location);
-    onChange(location);
+    
+    // Update GPS coordinates
+    const coords = `${location.latitude.toFixed(6)},${location.longitude.toFixed(6)}`;
+    setGpsCoordinates(coords);
+    
+    // Fetch address for the selected location
+    fetchAddress(location.latitude, location.longitude);
+    
     console.log('Selected location:', location);
   };
 
+  const updateParentData = (location: string, coordinates: string) => {
+    onChange({
+      location: location,
+      gps_coordinates: coordinates
+    });
+  };
+
   const handleConfirmLocation = () => {
-    if (selectedLocation) {
-      onChange(selectedLocation);
+    if (selectedLocation && locationText) {
+      updateParentData(locationText, gpsCoordinates);
       setModalVisible(false);
     } else {
       Alert.alert('Error', 'Please select a location first');
     }
+  };
+
+  const getDisplayText = () => {
+    if (locationText && gpsCoordinates) {
+      return `${locationText} (${gpsCoordinates})`;
+    } else if (locationText) {
+      return locationText;
+    } else if (gpsCoordinates) {
+      return `Coordinates: ${gpsCoordinates}`;
+    }
+    return 'Select location';
   };
 
   return (
@@ -166,9 +264,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           <Text
             style={[
               styles.buttonText,
-              !selectedLocation && styles.placeholderText,
+              !locationText && !gpsCoordinates && styles.placeholderText,
             ]}>
-            {selectedLocation ? formatLocation(selectedLocation) : 'Select location'}
+            {getDisplayText()}
           </Text>
         </View>
       </TouchableOpacity>
@@ -208,6 +306,17 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
               </MapView>
             </View>
 
+            {/* Location Preview */}
+            {selectedLocation && (
+              <View style={styles.locationPreview}>
+                <Text style={styles.previewTitle}>Selected Location:</Text>
+                <Text style={styles.previewLocation}>{locationText || 'Fetching address...'}</Text>
+                <Text style={styles.previewCoordinates}>
+                  GPS: {gpsCoordinates}
+                </Text>
+              </View>
+            )}
+
             <View style={styles.modalFooter}>
               <TouchableOpacity
                 style={styles.currentLocationButton}
@@ -216,8 +325,12 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
                 <Text style={styles.currentLocationText}>Use Current Location</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={handleConfirmLocation}>
+                style={[
+                  styles.confirmButton,
+                  (!selectedLocation || !locationText) && styles.confirmButtonDisabled
+                ]}
+                onPress={handleConfirmLocation}
+                disabled={!selectedLocation || !locationText}>
                 <Text style={styles.confirmButtonText}>Confirm Location</Text>
               </TouchableOpacity>
             </View>
@@ -314,6 +427,29 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
   },
+  locationPreview: {
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  previewTitle: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textLight,
+    marginBottom: theme.spacing.xs,
+  },
+  previewLocation: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+  previewCoordinates: {
+    fontFamily: theme.typography.fontFamily.regular,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.primary,
+  },
   modalFooter: {
     padding: theme.spacing.md,
     backgroundColor: theme.colors.white,
@@ -338,6 +474,9 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.sm,
     borderRadius: theme.borderRadius.md,
     alignItems: 'center',
+  },
+  confirmButtonDisabled: {
+    backgroundColor: theme.colors.border,
   },
   confirmButtonText: {
     color: theme.colors.white,

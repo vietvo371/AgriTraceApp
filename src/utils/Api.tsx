@@ -26,7 +26,10 @@ export interface Batch {
   harvest_date: string;
   cultivation_method: string;
   status: 'active' | 'completed' | 'cancelled';
-  image: string;
+  image?: string;
+  images?: {
+    product: string | null;
+  };
 }
 
 export interface UserProfile {
@@ -38,8 +41,8 @@ export interface UserProfile {
 
 
 const baseUrl = Platform.select({
-    ios: 'http://192.168.1.105:8000/api',
-    android: 'http://10.0.2.2:8000/api',
+    ios: 'http://localhost:8000/api',
+    android: 'https://agritrace.dzfullstack.com/api',
 });
 
 const api = axios.create({
