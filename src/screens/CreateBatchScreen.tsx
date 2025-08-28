@@ -29,11 +29,10 @@ interface CreateBatchScreenProps {
 }
 
 const cultivationMethodOptions = [
-  { label: 'Organic', value: 'organic', icon: 'leaf' },
-  { label: 'Traditional', value: 'traditional', icon: 'sprout' },
-  { label: 'Hydroponic', value: 'hydroponic', icon: 'water' },
+  { label: 'Hữu cơ', value: 'organic', icon: 'leaf' },
+  { label: 'Truyền thống', value: 'traditional', icon: 'sprout' },
+  { label: 'Hidroponics', value: 'hydroponic', icon: 'water' },
   { label: 'Aeroponic', value: 'aeroponic', icon: 'air-filter' },
-  { label: 'Vertical Farming', value: 'vertical', icon: 'arrow-up-down' },
 ];
 
 const CreateBatchScreen: React.FC<CreateBatchScreenProps> = ({ navigation }) => {

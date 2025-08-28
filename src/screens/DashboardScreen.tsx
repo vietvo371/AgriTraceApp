@@ -92,7 +92,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient 
-        colors={[theme.colors.primary + '5', theme.colors.white]} 
+        colors={[theme.colors.primary + '15', theme.colors.white]} 
         style={styles.backgroundContainer}
       ></LinearGradient>
       <ScrollView 

@@ -41,7 +41,7 @@ export interface UserProfile {
 
 
 const baseUrl = Platform.select({
-    ios: 'http://192.168.1.107:8000/api',
+    ios: 'https://agritrace.dzfullstack.com/api',
     android: 'https://agritrace.dzfullstack.com/api',
 });
 

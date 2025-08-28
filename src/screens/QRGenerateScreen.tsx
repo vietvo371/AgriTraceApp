@@ -40,7 +40,7 @@ const QRGenerateScreen: React.FC<QRGenerateScreenProps> = ({
       day: 'numeric',
     });
   };
-  const qrValue =` ${"http://192.168.1.107:8000/batch-qr-code/qrcode"}-${batch.traceability.batch_code}-${batch.id}`;
+  const qrValue =` ${"https://agritrace.dzfullstack.com/batch-qr-code/qrcode"}-${batch.traceability.batch_code}-${batch.id}`;
 
   
   const handleShare = async () => {
